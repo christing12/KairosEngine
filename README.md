@@ -1,0 +1,1 @@
+https://devblogs.microsoft.com/cppblog/shared-pch-usage-sample-in-visual-studio/
