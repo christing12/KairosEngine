@@ -1,6 +1,8 @@
 #pragma once
-#include "Texture.h"
-#include "CommandContext.h"
+
+
+#include "Core/EngineCore.h"
+#include "Core/BaseTypes.h"
 
 #define SWAP_CHAIN_BUFFER_COUNT 2
 
@@ -27,11 +29,11 @@ namespace Kairos {
 		Renderer() = default;
 		Renderer(HWND hWnd);
 		~Renderer();
-		GraphicsContext& GetGraphicsContext();
+		class GraphicsContext& GetGraphicsContext();
 
-		Texture& GetCurrBackBuffer();
+		class Texture& GetCurrBackBuffer();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetDSV();
-		Texture& GetDepthBuffer();
+		class Texture& GetDepthBuffer();
 
 		ID3D12Device2* GetDevice();
 		RenderDevice* GetRenderDevice() { return m_Device.get(); }

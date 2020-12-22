@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Event.h"
-#include "Core/KeyCodes.h"
+#include <Core/Events/Event.h>
+#include <Core/KeyCodes.h>
+
 #include <sstream>
 
 KRS_BEGIN_NAMESPACE(Kairos)

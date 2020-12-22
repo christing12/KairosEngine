@@ -3,17 +3,16 @@
 #include "MouseCodes.h"
 #include "Graphics/Core/Renderer.h"
 
-#include "Window.h"
 #include "Input.h"
 
 namespace Kairos {
 	void Application::Create()
 	{
-		Log::Init();
-		mWindow = CreateRef<Window>(WindowProps());
-		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		mWindow = Window(WindowProps());
+		mWindow.SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		Input::Init();
-		mRenderer = Renderer(mWindow->GetNativeWindow());
+		mRenderer = CreateScope<Renderer>((mWindow.GetNativeWindow()));
+		mRenderer->Initialize();
 	}
 
 	void Application::Run()
@@ -21,7 +20,7 @@ namespace Kairos {
 		std::chrono::high_resolution_clock::time_point frameStart = std::chrono::high_resolution_clock::now();
 		float deltaTime = 1.0f / 60.0f;
 		while (true) {
-			const auto ecode = mWindow->ProcessEvents();
+			const auto ecode = mWindow.ProcessEvents();
 			if (ecode) {
 				KRS_CORE_WARN("ENDING GAME");
 				break;
@@ -40,6 +39,9 @@ namespace Kairos {
 			Render();
 			Present();
 		}
+	}
+
+	void Application::InitEngine() {
 	}
 
 	void Application::OnEvent(Event& e)

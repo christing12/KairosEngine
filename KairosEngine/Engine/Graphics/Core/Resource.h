@@ -1,5 +1,10 @@
 #pragma once
 
+#include <Core/EngineCore.h>
+#include <Core/BaseTypes.h>
+
+#include <wrl.h>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Core/EngineCore.h"
+#include "EngineCore.h"
 #include "Events/Event.h"
-#include "Graphics/Core/Renderer.h"
+#include "Window.h"
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
@@ -22,14 +22,14 @@ public:
 public:
 	virtual void Update(float deltaTime);
 	virtual void Shutdown();
-	virtual void InitEngine() {}
+	virtual void InitEngine();
 
 	virtual void Render() {}
 	virtual void Present() {}
 protected:
 	bool mIsRunning = true;
-	Ref<class Window> mWindow;
-	Renderer mRenderer;
+	Window mWindow;
+	Scope<class Renderer> mRenderer;
 };
 
 extern Application* CreateApplication();

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Resource.h"
-#include "DescriptorHeap.h"
+#include <Core/BaseTypes.h>
+#include <Core/EngineCore.h>
+#include <Graphics/Core/Resource.h>
+#include <Graphics/Core/DescriptorHeap.h>
 
 KRS_BEGIN_NAMESPACE(Kairos)
 

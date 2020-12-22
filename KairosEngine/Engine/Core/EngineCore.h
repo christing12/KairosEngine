@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "Log.h"
 #define KRS_EXPAND_VARGS(x) x
 #define BIT(x) (1 << x) // bit shift by 'x' spaces
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)

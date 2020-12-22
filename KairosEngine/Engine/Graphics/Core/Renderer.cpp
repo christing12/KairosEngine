@@ -5,6 +5,7 @@
 #include "CommandContext.h"
 #include "RenderDevice.h"
 #include "SwapChain.h"
+#include "Texture.h"
 
 namespace Kairos {
     const Uint32 NUM_FRAMES = 2; // replace this somewhere else

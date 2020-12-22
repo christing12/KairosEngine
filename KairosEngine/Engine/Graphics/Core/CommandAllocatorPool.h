@@ -1,5 +1,11 @@
 #pragma once
 
+
+#include "Core/EngineCore.h"
+#include "Core/BaseTypes.h"
+
+#include <queue>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class CommandAllocatorPool {

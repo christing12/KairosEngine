@@ -30,7 +30,6 @@ set(APP_ALL_SRC
     ${APP_SRC}
 )
 
-
 add_executable(${APP_NAME} ${APP_ALL_INC} ${APP_ALL_SRC})
 
 set_target_properties(${APP_NAME}
@@ -42,14 +41,16 @@ set_target_properties(${APP_NAME}
 )
 
 target_include_directories(${APP_NAME}
-    PRIVATE ${ENGINE_DIR}
-    PRIVATE ${EXTNERAL_DIR}/include
+    PRIVATE ${CMAKE_SOURCE_DIR}/KairosEngine
+    PRIVATE ${CMAKE_SOURCE_DIR}/external/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${CMAKE_SOURCE_DIR}/test
 )
 
-target_link_libraries(${APP_NAME} 
-    PRIVATE KairosEngine
+target_link_libraries(${APP_NAME}
+    PUBLIC test
 )
+
 
 # Precompiled Header Flags
 
@@ -69,9 +70,11 @@ install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION lib/static
 )
 
+#[[
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_SOURCE_DIR}/external/lib/assimp/assimp-vc142-mtd.dll"
        # "${CMAKE_SOURCE_DIR}/external/WinPixEventRuntime/bin/x64/WinPixEventRuntime.dll"
         $<TARGET_FILE_DIR:MeshRenderer>
 )
+]]

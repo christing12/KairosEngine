@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wrl.h>
+
 namespace Kairos {
 	struct EngineCreateInfo {
 		bool Debug = false;
@@ -20,6 +22,6 @@ namespace Kairos {
 		~EngineFactory() = default;
 
 		void GetAdapter(IDXGIFactory4* pFactory, IDXGIAdapter4** ppAdapter);
-		void CreateDeviceDebug(ComPtr<ID3D12Device2> pdDevice);
+		void CreateDeviceDebug(Microsoft::WRL::ComPtr<ID3D12Device2> pdDevice);
 	};
 }

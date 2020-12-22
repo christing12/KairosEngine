@@ -11,10 +11,12 @@ namespace Kairos {
 		static void Init();
 		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return sCoreLogger; }
 		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return sClientLogger; }
-	private:
+
 		// heap allocated & shared among multiple objects
 		static std::shared_ptr<spdlog::logger> sCoreLogger;
 		static std::shared_ptr<spdlog::logger> sClientLogger;
+	private:
+
 	};
 }
 

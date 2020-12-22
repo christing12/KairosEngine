@@ -1,5 +1,11 @@
 #pragma once
 
+
+#include <Core/BaseTypes.h>
+#include <Core/EngineCore.h>
+
+#include <d3dx12.h>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class CommandContext;

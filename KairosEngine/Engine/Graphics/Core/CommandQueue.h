@@ -1,6 +1,10 @@
 #pragma once
-
 #include "CommandAllocatorPool.h"
+
+
+#include "Core/EngineCore.h"
+#include "Core/BaseTypes.h"
+
 
 namespace Kairos {
 	class CommandQueue {

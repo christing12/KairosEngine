@@ -1,5 +1,9 @@
 #pragma once
 
+#include <Core/BaseTypes.h>
+
+#include <wrl.h>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class Fence {

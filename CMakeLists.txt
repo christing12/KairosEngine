@@ -7,7 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin) # Output directory for shared lib (.DLL)
 
 set(ENGINE_DIR ${CMAKE_SOURCE_DIR}/KairosEngine)
-set(EXTNERAL_DIR ${CMAKE_SOURCE_DIR}/external)
+set(EXTERNAL ${CMAKE_SOURCE_DIR}/external)
 
 # something something
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -23,7 +23,7 @@ set(KRS_VERSION ${KRS_VERSION_MAJOR}.${KRS_VERSION_MINOR})
 
 project(${PROJECT_NAME} VERSION ${KRS_VERSION} LANGUAGES CXX)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/KairosEngine)
+add_subdirectory(KairosEngine)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/Applications)
 

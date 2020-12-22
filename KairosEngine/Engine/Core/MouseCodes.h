@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <Core/EngineCore.h>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 

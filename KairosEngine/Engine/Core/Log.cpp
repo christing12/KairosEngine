@@ -8,9 +8,9 @@ namespace Kairos {
 	void Log::Init() {
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		sCoreLogger = spdlog::stdout_color_mt("Kairos");
-		sClientLogger->set_level(spdlog::level::trace);
+		sCoreLogger->set_level(spdlog::level::trace);
 
-		sCoreLogger = spdlog::stdout_color_mt("App");
+		sClientLogger = spdlog::stdout_color_mt("App");
 		sClientLogger->set_level(spdlog::level::trace);
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GraphicsTypes.h"
+
 namespace Kairos {
 	class RenderDevice;
 

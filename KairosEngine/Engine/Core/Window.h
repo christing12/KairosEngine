@@ -27,7 +27,7 @@ struct WindowProps {
 class Window {
 public:
 	using EventCallbackFn = std::function<void(Event&)>;
-
+	Window() = default;
 	Window(const WindowProps& props);
 	virtual ~Window() = default;
 

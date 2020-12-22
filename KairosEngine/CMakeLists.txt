@@ -1,50 +1,46 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(ENGINE_PROJECT_NAME KairosEngine)
+set(LIB_NAME KairosEngine)
 
-project(${ENGINE_PROJECT_NAME} LANGUAGES CXX)
+project(${LIB_NAME} LANGUAGES CXX)
 
-# folders for visual studio
-set(GENERAL
-    KairosAPI.h
-    krspch.h
-    krspch.cpp
-)
-source_group(" " FILES ${GENERAL})
 
-# Core folder
+
+
+
 set(KRS_CORE_INC
-   Application.h
-   BaseTypes.h
-   EngineCore.h
-   MouseCodes.h
-   KeyCodes.h
-   Log.h
-   Input.h
-   Window.h
-   EngineMath.h
+    Engine/Core/Application.h
+    Engine/Core/Input.h
+    Engine/Core/Window.h
+    Engine/Core/BaseTypes.h
+    Engine/Core/EngineCore.h
+    Engine/Core/EngineMath.h
+    Engine/Core/KeyCodes.h
+    Engine/Core/MouseCodes.h
+    Engine/Core/Log.h
 )
 
 set(KRS_CORE_SRC
-   Application.cpp
-   Log.cpp
-   Input.cpp
-   Window.cpp
+    Engine/Core/Log.cpp
+    Engine/Core/Window.cpp
+    Engine/Core/Application.cpp
+    Engine/Core/Input.cpp
 )
 
-list(TRANSFORM KRS_CORE_INC PREPEND "Engine/Core/")
-list(TRANSFORM KRS_CORE_SRC PREPEND "Engine/Core/")
 source_group("Core" FILES ${KRS_CORE_INC} ${KRS_CORE_SRC})
 
 
+
 set(KRS_EVENT_INC
-    Event.h
-    KeyEvent.h
-    MouseEvent.h
-    WindowEvent.h
+    Engine/Core/Events/Event.h
+    Engine/Core/Events/KeyEvent.h
+    Engine/Core/Events/MouseEvent.h
+    Engine/Core/Events/WindowEvent.h
 )
-list(TRANSFORM KRS_EVENT_INC PREPEND "Engine/Core/Events/")
 source_group("Core\\Events" FILES ${KRS_EVENT_INC})
+
+
+
 
 
 set(KRS_GRAPHICS_CORE_INC
@@ -98,67 +94,82 @@ source_group("Graphics\\Core" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE
 
 
 
+
+
+
+
+# folders for visual studio
+set(KRS_GENERAL_INC
+    API.h
+    Engine/krspch.h
+)
+
+set(KRS_GENERAL_SRC
+    Engine/krspch.cpp
+)
+source_group(" " FILES ${KRS_GENERAL_INC} ${KRS_GENERAL_SRC})
+
+
+
+
 set(KRS_ALL_INC
-    ${GENERAL}
+    ${KRS_GENERAL_INC}
     ${KRS_CORE_INC}
     ${KRS_EVENT_INC}
     ${KRS_GRAPHICS_CORE_INC}
+    
 )
 
 set(KRS_ALL_SRC
+    ${KRS_GENERAL_SRC}
     ${KRS_CORE_SRC}
     ${KRS_GRAPHICS_CORE_SRC}
 )
 
-add_library(${ENGINE_PROJECT_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
+add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
 
-set_target_properties(${ENGINE_PROJECT_NAME}
+
+set_target_properties(${LIB_NAME}
     PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(${ENGINE_PROJECT_NAME}
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+
+
+# ----------------- LINKED LIBRARIES ---------------------- #
+target_link_libraries(${LIB_NAME}
+    PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/DirectXTK12.lib
+    PUBLIC d3d12.lib
+    PUBLIC dxgi.lib
+    PUBLIC d3dcompiler.lib
+    PUBLIC dxguid.lib
+)
+
+
+# ------------------ ADDITIONAL INCLUDE DIRECTORIES ------------ #
+
+target_include_directories(${LIB_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Engine
     PUBLIC ${CMAKE_SOURCE_DIR}/external/include
-    PUBLIC ${CMAKE_SOURCE_DIR}/external/include/DirectXTK12/Inc
 )
 
-target_compile_definitions(${ENGINE_PROJECT_NAME}
-    PUBLIC KRS_DEBUG
-    PUBLIC KRS_PLATFORM_WINDOWS
-)
+# ---------------- PRECOMPILED HEADERS -------------- #
 
-
-# link libraries
-target_link_libraries(${ENGINE_PROJECT_NAME}
-    PUBLIC
-        ${EXTNERAL_DIR}/lib/DirectXTK12/DirectXTK12.lib
-      #  ${CMAKE_SOURCE_DIR}/external/assimp/lib/assimp-vc142-mtd.lib
-      #  ${CMAKE_SOURCE_DIR}/external/WinPixEventRuntime/bin/x64/WinPixEventRuntime.lib
- )
-
- target_compile_options(${ENGINE_PROJECT_NAME} PRIVATE "/wd4251")
-target_compile_options(${ENGINE_PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/bigobj>)
-
-# Precompiled Header Flags
-
-set_source_files_properties(${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )
 
-set_source_files_properties(krspch.cpp 
+set_source_files_properties(Engine/krspch.cpp
     PROPERTIES
         COMPILE_FLAGS /Yc"krspch.h"
 )
 
-# set_property(SOURCE ${KRS_CORE_SHADERS} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
+# ------------- PREPROCESS DEFINES ------------- #
 
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib/static
+target_compile_definitions(${LIB_NAME}
+    PUBLIC KRS_DEBUG
+    PUBLIC KRS_PLATFORM_WINDOWS
 )

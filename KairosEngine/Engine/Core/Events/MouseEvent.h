@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Event.h"
-#include "Core/EngineCore.h"
-#include "Core/MouseCodes.h"
+#include <Core/Events/Event.h>
+#include <Core/EngineCore.h>
+#include <Core/MouseCodes.h>
 
 #include <string>
 #include <sstream>

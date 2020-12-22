@@ -1,5 +1,10 @@
 #pragma once
 
+
+#include "Core/EngineCore.h"
+#include "Core/BaseTypes.h"
+
+
 namespace Kairos {
 	enum class ShaderType : Uint32 {
 		Vertex = 0,
