@@ -93,8 +93,14 @@ list(TRANSFORM KRS_GRAPHICS_CORE_SRC PREPEND "Engine/Graphics/Core/")
 source_group("Graphics\\Core" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE_SRC})
 
 
-
-
+set(KRS_CORE_SHADERS
+    Constants.hlsl
+    PixelShader.hlsl
+    VertexShader.hlsl
+)
+list(TRANSFORM KRS_CORE_SHADERS PREPEND "Engine/Graphics/Shaders/")
+source_group("Graphics\\Shaders" FILES ${KRS_CORE_SHADERS})
+set_property(SOURCE ${KRS_CORE_SHADERS} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
 
 
@@ -117,6 +123,7 @@ set(KRS_ALL_INC
     ${KRS_CORE_INC}
     ${KRS_EVENT_INC}
     ${KRS_GRAPHICS_CORE_INC}
+    ${KRS_CORE_SHADERS}
     
 )
 
@@ -140,6 +147,7 @@ set_target_properties(${LIB_NAME}
 # ----------------- LINKED LIBRARIES ---------------------- #
 target_link_libraries(${LIB_NAME}
     PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/DirectXTK12.lib
+    PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/assimp-vc142-mtd.lib
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC d3dcompiler.lib

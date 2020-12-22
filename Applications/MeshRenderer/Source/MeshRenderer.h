@@ -31,24 +31,21 @@ private:
 
 	std::shared_ptr<Kairos::Shader> mVertexShader;
 	std::shared_ptr<Kairos::Shader> mPixelShader;
-	
+
+	std::shared_ptr<Kairos::Mesh> mMesh;
+
+	ConstantBuffer cbPerObject;
+
 private:
 	void TestCubes(Kairos::GraphicsContext& context);
-	XMFLOAT4X4 cameraProjMat; // this will store our projection matrix
-	XMFLOAT4X4 cameraViewMat; // this will store our view matrix
+	Matrix cameraProjMat; // this will store our projection matrix
+	Matrix cameraViewMat; // this will store our view matrix
 
-	XMFLOAT4 cameraPosition; // this is our cameras position vector
-	XMFLOAT4 cameraTarget; // a vector describing the point in space our camera is looking at
-	XMFLOAT4 cameraUp; // the worlds up vector
+	Vector3 cameraPosition; // this is our cameras position vector
+	Vector3 cameraTarget; // a vector describing the point in space our camera is looking at
+	Vector3 cameraUp; // the worlds up vector
 
-	XMFLOAT4X4 cube1WorldMat; // our first cubes world matrix (transformation matrix)
-	XMFLOAT4X4 cube1RotMat; // this will keep track of our rotation for the first cube
-	XMFLOAT4 cube1Position; // our first cubes position in space
-
-	XMFLOAT4X4 cube2WorldMat; // our first cubes world matrix (transformation matrix)
-	XMFLOAT4X4 cube2RotMat; // this will keep track of our rotation for the second cube
-	XMFLOAT4 cube2PositionOffset; // our second cube will rotate around the first cube, so this is the position offset from the first cube
-
-	int numCubeIndices; // the number of indices to draw the cube
-
+	Matrix cube1WorldMat; // our first cubes world matrix (transformation matrix)
+	Matrix cube1RotMat; // this will keep track of our rotation for the first cube
+	Vector3 cube1Position; // our first cubes position in space
 };

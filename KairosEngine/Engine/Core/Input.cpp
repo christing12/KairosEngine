@@ -44,12 +44,12 @@ namespace Kairos {
 	}
 
 	bool Input::OnKeyPressed(KeyPressedEvent& e) {
-		std::cout << e.ToString() << std::endl;
+		//std::cout << e.ToString() << std::endl;
 		return true;
 	}
 	bool Input::OnKeyReleased(KeyReleasedEvent& e)
 	{
-		std::cout << e.ToString() << std::endl;
+		//std::cout << e.ToString() << std::endl;
 		return true;
 	}
 	bool Input::OnMousePressed(MouseButtonPressedEvent& e)
@@ -57,14 +57,14 @@ namespace Kairos {
 		if (e.GetMouseButton() == Mouse::LeftButton)
 		{
 			auto [x, y] = Input::GetMousePosition();
-			std::cout << x << " " << y << std::endl;
+			//std::cout << x << " " << y << std::endl;
 		}
 		//std::cout << e.ToString() << std::endl;
 		return true;
 	}
 	bool Input::OnMouseReleased(MouseButtonReleasedEvent& e)
 	{
-		std::cout << e.ToString() << std::endl;
+		//std::cout << e.ToString() << std::endl;
 		return true;
 	}
 

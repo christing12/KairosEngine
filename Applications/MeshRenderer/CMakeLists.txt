@@ -44,11 +44,10 @@ target_include_directories(${APP_NAME}
     PRIVATE ${CMAKE_SOURCE_DIR}/KairosEngine
     PRIVATE ${CMAKE_SOURCE_DIR}/external/include
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-    PRIVATE ${CMAKE_SOURCE_DIR}/test
 )
 
 target_link_libraries(${APP_NAME}
-    PUBLIC test
+    PUBLIC KairosEngine
 )
 
 

@@ -18,14 +18,27 @@ void MeshRenderer::Render()
 	GraphicsContext& gfxContext = mRenderer->GetGraphicsContext();
 	auto& currBackBuffer = mRenderer->GetCurrBackBuffer();
 
+	gfxContext.TransitionResource(currBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	D3D12_CPU_DESCRIPTOR_HANDLE RTVs[] =
 	{
 		currBackBuffer.GetRTV()
 	};
-
 	gfxContext.SetRenderTargets(_countof(RTVs), RTVs, mRenderer->GetDSV());
 	gfxContext.ClearColor(currBackBuffer);
 	gfxContext.ClearDepth(mRenderer->GetDepthBuffer(), D3D12_CLEAR_FLAG_DEPTH, 1.f, 0);
+
+	gfxContext.SetViewportScissorRect(mRenderer->m_Viewport, mRenderer->m_Scissor);
+	gfxContext.SetPipelineState(*(mPSO.get()));
+	gfxContext.SetRootSignature(*(mSig.get()));
+
+	gfxContext.SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	gfxContext.SetVertexBuffers(0, 1, mVBView);
+	gfxContext.SetIndexBuffer(mIBView);
+
+	gfxContext.SetDynamicDescriptors(1, 0, 1, mTexture->GetSRV());
+	TestCubes(gfxContext);
+
+	//mEditor->Render(gfxContext);
 
 	gfxContext.Submit(true);
 }
@@ -33,6 +46,30 @@ void MeshRenderer::Render()
 void MeshRenderer::Present()
 {
 	mRenderer->Present();
+}
+
+void MeshRenderer::TestCubes(Kairos::GraphicsContext& context)
+{
+	{
+		// rotation matrices
+		Matrix rotXMat = Matrix::CreateRotationX(0.001f);
+		Matrix rotYMat = Matrix::CreateRotationY(0.002f);
+		Matrix rotZMat = Matrix::CreateRotationZ(0.0003f);
+
+		Matrix rotMat = cube1RotMat * rotXMat * rotYMat * rotZMat;
+		cube1RotMat = rotMat;
+
+		Matrix translationMat = Matrix::CreateTranslation(cube1Position);
+
+		Matrix worldMat = rotMat * translationMat;
+		cube1WorldMat = worldMat;
+
+		Matrix wvpMat = cube1WorldMat * cameraViewMat * cameraProjMat;
+		cbPerObject.mvpMat = wvpMat.Transpose();
+
+		context.SetDynamicCBV(0, sizeof(cbPerObject), &cbPerObject);
+		context.DrawIndexedInstance(mMesh->m_Indices.size(), 1, 0, 0, 0);
+	}
 }
 
 void MeshRenderer::InitEngine()
@@ -66,8 +103,62 @@ void MeshRenderer::InitEngine()
 		mSig->InitStaticSampler(0, sampler, D3D12_SHADER_VISIBILITY_PIXEL);
 
 
-		//mTexture = CreateRef<Texture>(mRenderer->GetRenderDevice(),
-		//	"C:/Users/Chris Ting/Desktop/Personal/WaterSimulation/Engine/Source/Graphics/Textures/wall.jpg");
+		mTexture = CreateRef<Texture>(mRenderer->GetRenderDevice(),
+			"C:/Users/Chris Ting/Desktop/MeshRenderer/Data/Textures/wall.jpg");
 		mSig->Finalize(L"ROOT SIGNATURE", rootSignatureFlags);
 	}
+
+	{
+		std::wstring filePath = L"C:/Users/Chris Ting/Desktop/MeshRenderer/KairosEngine/Engine/Graphics/Shaders/";
+
+		ShaderCreateInfo Vinfo(ShaderType::Vertex, filePath + L"VertexShader.hlsl", "main");
+		mVertexShader = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), Vinfo);
+
+		ShaderCreateInfo PInfo(ShaderType::Pixel, filePath + L"PixelShader.hlsl", "main");
+		mPixelShader = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), PInfo);
+
+		mPSO = CreateRef<PipelineStateObject>(mRenderer->GetRenderDevice());
+
+		ID3DBlob* blob = mVertexShader->GetD3DBlob();
+		ID3DBlob* sBlob = mPixelShader->GetD3DBlob();
+
+		mPSO->SetInputLayout(D3D12_INPUT_LAYOUT_DESC{ inputLayout, _countof(inputLayout) });
+		mPSO->SetRootSignature(mSig->GetD3DRootSignature());
+		mPSO->SetVertexShader(CD3DX12_SHADER_BYTECODE(blob));
+		mPSO->SetPixelShader(CD3DX12_SHADER_BYTECODE(sBlob));
+		mPSO->SetTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+		mPSO->SetRenderTarget(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_D32_FLOAT);
+		mPSO->SetSampleMask(0xffffffff);
+		mPSO->SetRasterizerState(CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT));
+		mPSO->SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
+		mPSO->SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
+
+		mPSO->Finalize();
+	}
+
+	float aspectRatio = WINDOW_WIDTH / WINDOW_HEIGHT;
+
+	{
+		mMesh = CreateRef<Mesh>(mRenderer->m_Device.get(), "C:/Users/Chris Ting/Desktop/MeshRenderer/Data/Chair.obj");
+		mVBView = mMesh->GetVertexView();
+		mIBView = mMesh->GetIndexView();
+	}
+
+	{
+		// build projection and view matrix
+		cameraProjMat = XMMatrixPerspectiveFovLH(45.0f * (3.14f / 180.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+
+		// set starting camera state
+		cameraPosition = Vector3(0.0f, 2.0f, -4.0f);
+		cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
+		cameraUp = Vector3(0.0f, 1.0f, 0.0f);
+
+		cameraViewMat = XMMatrixLookAtLH(cameraPosition, cameraTarget, cameraUp);
+
+		cube1Position = Vector3(0.f, 0.f, 0.f);
+		cube1WorldMat = Matrix::CreateTranslation(cube1Position);
+		cube1RotMat = Matrix::Identity;
+	}
+
 }

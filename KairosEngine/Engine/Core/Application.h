@@ -2,6 +2,9 @@
 
 #include "EngineCore.h"
 #include "Events/Event.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+#include "Events/WindowEvent.h"
 #include "Window.h"
 
 KRS_BEGIN_NAMESPACE(Kairos)
@@ -26,10 +29,14 @@ public:
 
 	virtual void Render() {}
 	virtual void Present() {}
+
+	bool OnKeyPressed(KeyPressedEvent& e);
 protected:
 	bool mIsRunning = true;
 	Window mWindow;
 	Scope<class Renderer> mRenderer;
+protected:
+
 };
 
 extern Application* CreateApplication();
