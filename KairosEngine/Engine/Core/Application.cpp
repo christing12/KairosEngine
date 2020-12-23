@@ -11,7 +11,7 @@ namespace Kairos {
 	{
 		mWindow.Init(1280, 1024);
 		mWindow.SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-		Input::Init();
+		mInput = Input::Get();
 		mRenderer = CreateScope<Renderer>();
 		mRenderer->Initialize(mWindow);
 	}
@@ -50,7 +50,7 @@ namespace Kairos {
 
 	void Application::OnEvent(Event& e)
 	{
-		Input::sInstance->OnEvent(e);
+		mInput->OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(Application::OnKeyPressed));

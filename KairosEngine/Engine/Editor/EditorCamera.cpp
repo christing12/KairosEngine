@@ -9,15 +9,17 @@ namespace Kairos {
         m_Rotation = Vector3(90.0f, 0.0f, 0.0f);
         m_Target = Vector3(0.0f, 0.0f, 0.0f);
 
-        m_DistFromTarget = Vector3::Distance(Vector3(-5.f, 5.f, 5.f), m_Target);
-        m_Yaw = 3.0f * Math::Pi / 4.0f;
-        m_Pitch = Math::Pi / 4.0f;
+        m_DistFromTarget = Vector3::Distance(Vector3(0.0f, 0.0f, 4.0f), m_Target);
+        m_Pitch = 0.0f;
+        m_Yaw = Math::Pi;
+       /* m_Yaw = 3.0f * Math::Pi / 4.0f;
+        m_Pitch = Math::Pi / 4.0f;*/
 
         UpdateCameraView();
     }
     void EditorCamera::Update(float deltaTime)
     {
-        if (Input::IsKeyDown(Key::Q)) {
+        if (Input::IsKeyDown(Key::LeftAlt)) {
             auto [x, y] = Input::GetMousePosition();
             Vector2 mouse(x, y);
             Vector2 delta = Vector2(mouse - mInitialMousePos) * 0.003f;
@@ -40,7 +42,10 @@ namespace Kairos {
 
     Quaternion EditorCamera::GetOrientation() const
     {
-        return Quaternion(Vector3(-m_Pitch, -m_Yaw, 0.0f));
+        // y x z
+        return Quaternion::CreateFromYawPitchRoll(m_Yaw, m_Pitch, 0.0f);
+        
+       // return Quaternion(Vector3(-m_Pitch, -m_Yaw, 0.0f));
     }
 
     Vector3 EditorCamera::GetUpDir() const
@@ -55,7 +60,7 @@ namespace Kairos {
 
     Vector3 EditorCamera::GetForward() const
     {
-        return Vector3::Transform(Vector3::Forward, GetOrientation());
+        return Vector3::Transform(Vector3::Backward, GetOrientation());
     }
 
     void EditorCamera::UpdateCameraView()
@@ -63,7 +68,8 @@ namespace Kairos {
         m_Position = CalculatePosition();
 
         Quaternion orientation = GetOrientation();
-        m_ViewMatrix = Matrix::CreateTranslation(m_Position) * Matrix::CreateFromQuaternion(orientation);
+        m_ViewMatrix = Matrix::CreateFromQuaternion(orientation) 
+            * Matrix::CreateTranslation(m_Position);
         m_ViewMatrix = m_ViewMatrix.Invert();
 
     }

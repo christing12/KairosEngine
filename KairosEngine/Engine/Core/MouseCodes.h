@@ -14,9 +14,9 @@ KRS_BEGIN_NAMESPACE(Mouse)
 	enum : MouseCode
 	{
 		// WinUser.h
-		LeftButton = 0x0001,
-		RightButton = 0x0002,
-		MiddleButton = 0x0010
+		LeftButton = 1,
+		RightButton = 2,
+		MiddleButton = 16
 	};
 
 

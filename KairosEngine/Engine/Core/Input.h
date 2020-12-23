@@ -5,6 +5,8 @@
 #include "Events/MouseEvent.h"
 #include "Events/WindowEvent.h"
 
+#include <DirectXTK12/Inc/SimpleMath.h>
+
 #include <map>
 
 KRS_BEGIN_NAMESPACE(Kairos)
@@ -12,7 +14,10 @@ KRS_BEGIN_NAMESPACE(Kairos)
 class Input {
 	friend class Application;
 public:
-	static void Init();
+	static Input* Get() {
+		static Input input;
+		return &input;
+	}
 	void OnEvent(Event& e);
 public:
 	static bool IsKeyDown(KeyCode keycode);
@@ -27,9 +32,15 @@ private:
 	bool OnKeyReleased(KeyReleasedEvent& e);
 	bool OnMousePressed(MouseButtonPressedEvent& e);
 	bool OnMouseReleased(MouseButtonReleasedEvent& e);
+	bool OnMouseMoved(MouseMovedEvent& e);
 private:
-	static Input* sInstance;
 	bool keyState[256] = { false };
+
+	bool leftMouseButton = false;
+	bool rightMouseButton = false;
+	bool middleMouseButton = false;
+
+	float mouseX = 0, mouseY = 0;
 };
 
 KRS_END_NAMESPACE

@@ -35,6 +35,8 @@ protected:
 	bool mIsRunning = true;
 	Window mWindow;
 	Scope<class Renderer> mRenderer;
+
+	class Input* mInput;
 };
 
 extern Application* CreateApplication();

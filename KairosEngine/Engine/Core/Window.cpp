@@ -114,10 +114,11 @@ namespace Kairos {
 
 	LRESULT Window::InternalWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		//if (ImGui_ImplWin32_WndProcHandler(mHWND, msg, wParam, lParam))
-		//{
-		//	return true;
-		//}
+		if (ImGui_ImplWin32_WndProcHandler(mHWND, msg, wParam, lParam))
+		{
+			return true;
+		}
+		//const auto& imio = ImGui::GetIO();
 
 		switch (msg)
 		{
@@ -125,6 +126,7 @@ namespace Kairos {
 			PostQuitMessage(0);
 			return 0;
 		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
 		{
 			int key = (int)wParam;
 			KeyPressedEvent event((KeyCode)key, 0);
@@ -132,25 +134,58 @@ namespace Kairos {
 			break;
 		}
 		case WM_KEYUP:
+		case WM_SYSKEYUP:
 		{
 			KeyReleasedEvent event((KeyCode)(int)wParam);
 			mCallbackFunc(event);
 			break;
 		}
+
+		case WM_MOUSEMOVE:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			if (pt.x >= 0 && pt.x < mWidth && pt.y >= 0 && pt.y < mHeight) {
+				MouseMovedEvent e(static_cast<float>(pt.x), static_cast<float>(pt.y));
+				mCallbackFunc(e);
+			}
+			else {
+				if (wParam & (MK_LBUTTON | MK_RBUTTON)) {
+					MouseMovedEvent e(static_cast<float>(pt.x), static_cast<float>(pt.y));
+					mCallbackFunc(e);
+				}
+			}
+		}
+
 		case WM_MBUTTONDOWN:
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		{
+
+			const POINTS pt = MAKEPOINTS(lParam);
+
 			MouseButtonPressedEvent event((MouseCode)(int)wParam);
 			mCallbackFunc(event);
 			break;
 		}
 
 		case WM_MBUTTONUP:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			MouseButtonReleasedEvent event(Mouse::MiddleButton);
+			mCallbackFunc(event);
+			break;
+		}
 		case WM_LBUTTONUP:
+		{
+			const POINTS pt = MAKEPOINTS(lParam);
+			MouseButtonReleasedEvent event(Mouse::LeftButton);
+			mCallbackFunc(event);
+			break;
+		}
 		case WM_RBUTTONUP:
 		{
-			MouseButtonReleasedEvent event((MouseCode)(int)wParam);
+			const POINTS pt = MAKEPOINTS(lParam);
+			MouseButtonReleasedEvent event(Mouse::RightButton);
 			mCallbackFunc(event);
 			break;
 		}

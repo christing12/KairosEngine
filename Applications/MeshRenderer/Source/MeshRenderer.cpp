@@ -22,7 +22,7 @@ void MeshRenderer::OnEvent(Kairos::Event& e)
 
 void MeshRenderer::Update(float deltaTime)
 {
-	//mCamera.Update(deltaTime);
+	mCamera.Update(deltaTime);
 }
 
 void MeshRenderer::Shutdown()
@@ -82,7 +82,7 @@ void MeshRenderer::TestCubes(Kairos::GraphicsContext& context)
 		Matrix worldMat = rotMat * translationMat;
 		cube1WorldMat = worldMat;
 
-		Matrix wvpMat = cube1WorldMat * cameraViewMat * cameraProjMat;
+		Matrix wvpMat = cube1WorldMat * mCamera.GetViewMat() * mCamera.GetProjMat();
 		cbPerObject.mvpMat = wvpMat.Transpose();
 
 		context.SetDynamicCBV(0, sizeof(cbPerObject), &cbPerObject);
@@ -172,11 +172,13 @@ void MeshRenderer::InitEngine()
 		cameraProjMat = XMMatrixPerspectiveFovLH(45.0f * (3.14f / 180.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
 
 		// set starting camera state
-		cameraPosition = Vector3(0.0f, 2.0f, -4.0f);
+		cameraPosition = Vector3(0.0f, 0.0f, 4.0f);
+		std::cout << cameraPosition.Length() << std::endl;
 		cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
 		cameraUp = Vector3(0.0f, 1.0f, 0.0f);
 
 		cameraViewMat = XMMatrixLookAtLH(cameraPosition, cameraTarget, cameraUp);
+		Matrix test = mCamera.GetViewMat();
 
 		cube1Position = Vector3(0.f, 0.f, 0.f);
 		cube1WorldMat = Matrix::CreateTranslation(cube1Position);
