@@ -3,6 +3,8 @@
 #include <wrl.h>
 
 namespace Kairos {
+	class Window;
+
 	struct EngineCreateInfo {
 		bool Debug = false;
 	};
@@ -16,7 +18,7 @@ namespace Kairos {
 		}
 
 		void CreateRenderDevice(Ref<class RenderDevice>& pDevice, const EngineCreateInfo& createInfo);
-		void CreateSwapChain(Ref<class RenderDevice> pDevice, const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<class SwapChain>& pSwapChain, HWND hWnd);
+		void CreateSwapChain(Ref<class RenderDevice> pDevice, const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<class SwapChain>& pSwapChain, Window& window);
 	private:
 		EngineFactory() {}
 		~EngineFactory() = default;

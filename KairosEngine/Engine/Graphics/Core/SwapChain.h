@@ -7,10 +7,11 @@
 KRS_BEGIN_NAMESPACE(Kairos)
 class Texture;
 class RenderDevice;
+class Window;
 
 class SwapChain {
 public:
-	SwapChain(const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<RenderDevice> pDevice, HWND hWnd);
+	SwapChain(const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<RenderDevice> pDevice, Window& window);
 	~SwapChain();
 
 	void Resize(Uint32 newWidth, Uint32 newHeight);
@@ -26,7 +27,7 @@ public:
 
 	void Present();
 protected:
-	void CreateDXGISwapChain(HWND hWnd);
+	void CreateDXGISwapChain(Window& window);
 	void CreateRTVAndDSV();
 private:
 	Uint32 m_NumFrames = 0;

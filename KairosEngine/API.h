@@ -11,7 +11,11 @@
 #include "Engine/Core/Events/MouseEvent.h"
 #include "Engine/Core/Events/WindowEvent.h"
 
+#include "Engine/Editor/EngineIMGUI.h"
+#include "Engine/Editor/EditorCamera.h"
+
 #include "Engine/Graphics/Core/Buffer.h"
+#include "Engine/Graphics/Core/Camera.h"
 #include "Engine/Graphics/Core/CommandContext.h"
 #include "Engine/Graphics/Core/DescriptorHeap.h"
 #include "Engine/Graphics/Core/DynamicDescriptorHeap.h"

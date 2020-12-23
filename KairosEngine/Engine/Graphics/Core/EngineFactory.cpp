@@ -37,9 +37,9 @@ namespace Kairos {
 		pDevice->CreateCommandQueues();
 	}
 
-	void EngineFactory::CreateSwapChain(Ref<RenderDevice> pDevice, const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<SwapChain>& pSwapChain, HWND hWnd)
+	void EngineFactory::CreateSwapChain(Ref<RenderDevice> pDevice, const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<SwapChain>& pSwapChain, Window& window)
 	{
-		pSwapChain = CreateRef<SwapChain>(scDesc, pDevice, hWnd);
+		pSwapChain = CreateRef<SwapChain>(scDesc, pDevice, window);
 	}
 
 

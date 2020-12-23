@@ -93,6 +93,23 @@ list(TRANSFORM KRS_GRAPHICS_CORE_SRC PREPEND "Engine/Graphics/Core/")
 source_group("Graphics\\Core" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE_SRC})
 
 
+
+set(KRS_EDITOR_INC
+    EditorCamera.h
+    EngineIMGUI.h
+)
+
+set(KRS_EDITOR_SRC
+    EditorCamera.cpp
+    EngineIMGUI.cpp
+)
+list(TRANSFORM KRS_EDITOR_INC PREPEND "Engine/Editor/")
+list(TRANSFORM KRS_EDITOR_SRC PREPEND "Engine/Editor/")
+source_group("Editor" FILES ${KRS_EDITOR_INC} ${KRS_EDITOR_SRC})
+
+
+
+
 set(KRS_CORE_SHADERS
     Constants.hlsl
     PixelShader.hlsl
@@ -124,6 +141,7 @@ set(KRS_ALL_INC
     ${KRS_EVENT_INC}
     ${KRS_GRAPHICS_CORE_INC}
     ${KRS_CORE_SHADERS}
+    ${KRS_EDITOR_INC}
     
 )
 
@@ -131,6 +149,7 @@ set(KRS_ALL_SRC
     ${KRS_GENERAL_SRC}
     ${KRS_CORE_SRC}
     ${KRS_GRAPHICS_CORE_SRC}
+    ${KRS_EDITOR_SRC}
 )
 
 add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
@@ -148,6 +167,7 @@ set_target_properties(${LIB_NAME}
 target_link_libraries(${LIB_NAME}
     PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/DirectXTK12.lib
     PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/assimp-vc142-mtd.lib
+    PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/imgui.lib
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC d3dcompiler.lib
@@ -164,7 +184,7 @@ target_include_directories(${LIB_NAME}
 
 # ---------------- PRECOMPILED HEADERS -------------- #
 
-set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )

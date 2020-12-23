@@ -19,6 +19,7 @@
 #pragma comment(lib, "dxguid.lib")
 //
 using namespace Microsoft::WRL;
+using namespace DirectX::SimpleMath;
 
 
 #include <stdlib.h>

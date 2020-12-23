@@ -14,7 +14,10 @@ public:
 	MeshRenderer() = default;
 
 	void DoSomething();
+	virtual void OnEvent(Kairos::Event& e) override final;
 
+	virtual void Update(float deltaTime) override final;
+	virtual void Shutdown() override final;
 	virtual void InitEngine() override final;
 	virtual void Render() override final;
 	virtual void Present() override final;
@@ -35,6 +38,9 @@ private:
 	std::shared_ptr<Kairos::Mesh> mMesh;
 
 	ConstantBuffer cbPerObject;
+private:
+	Kairos::EngineIMGUI mEditor;
+	Kairos::EditorCamera mCamera;
 
 private:
 	void TestCubes(Kairos::GraphicsContext& context);

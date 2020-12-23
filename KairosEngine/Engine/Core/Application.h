@@ -20,7 +20,7 @@ public:
 
 	void Create();
 	void Run();
-	void OnEvent(Event& e);
+	virtual void OnEvent(Event& e);
 
 public:
 	virtual void Update(float deltaTime);
@@ -35,8 +35,6 @@ protected:
 	bool mIsRunning = true;
 	Window mWindow;
 	Scope<class Renderer> mRenderer;
-protected:
-
 };
 
 extern Application* CreateApplication();

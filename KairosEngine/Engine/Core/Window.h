@@ -11,45 +11,39 @@
 KRS_BEGIN_NAMESPACE(Kairos)
 
 
-struct WindowProps {
-	std::string Title;
-	unsigned int Width;
-	unsigned int Height;
-
-	WindowProps(const std::string& title = "Kairos Engine",
-		unsigned int width = 1280,
-		unsigned int height = 1024)
-		: Title(title), Width(width), Height(height)
-	{}
-};
 
 // abstract class / interface so its platform agnostic (do i really need this?)
 class Window {
 public:
-	using EventCallbackFn = std::function<void(Event&)>;
 	Window() = default;
-	Window(const WindowProps& props);
 	virtual ~Window() = default;
 
-	void Init();
+	void Init(Uint32 width, Uint32 height);
 	void Shutdown();
 	std::optional<int> ProcessEvents();
 
+
+	static LRESULT CALLBACK StaticWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WndProcThunk(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK InternalWndProc(UINT message, WPARAM wParam, LPARAM lParam);
+
+	using EventCallbackFn = std::function<void(Event&)>;
+	HWND GetNativeWindow() { return mHWND; }
 	void SetEventCallback(const EventCallbackFn& callback) { mCallbackFunc = callback; }
 
-	HWND GetNativeWindow() { return mHWND; }
 private:
-	Uint32 width = 1280;
-	Uint32 height = 1024;
-	std::string mTitle;
-	EventCallbackFn mCallbackFunc;
+	Uint32 mWidth = 1280;
+	Uint32 mHeight = 1024;
 	HWND mHWND;
 	HINSTANCE mInstance;
 
+	EventCallbackFn mCallbackFunc;
 private:
 	void RegisterWindowClass(HINSTANCE instance, const wchar_t* windowClassName);
-	HWND CreateNewWindow(const wchar_t* windowClassName, HINSTANCE instance, const wchar_t* title,
+	void CreateNewWindow(const wchar_t* windowClassName, HINSTANCE instance, const wchar_t* title,
 		Uint32 width, Uint32 height);
+
+
 };
 
 

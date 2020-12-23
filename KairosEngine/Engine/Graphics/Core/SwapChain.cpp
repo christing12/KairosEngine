@@ -5,17 +5,18 @@
 #include "RenderDevice.h"
 #include "Resource.h"
 #include "Texture.h"
+#include "Core/Window.h"
 
 namespace Kairos {
 
-	SwapChain::SwapChain(const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<RenderDevice> pDevice, HWND hWnd)
+	SwapChain::SwapChain(const DXGI_SWAP_CHAIN_DESC1& scDesc, Ref<RenderDevice> pDevice, Window& window)
 		: m_Desc(scDesc)
 		, m_Device(pDevice)
 		, m_NumFrames(scDesc.BufferCount)
 		, m_Width(scDesc.Width)
 		, m_Height(scDesc.Height)
 	{
-		CreateDXGISwapChain(hWnd);
+		CreateDXGISwapChain(window);
 		CreateRTVAndDSV();
 	}
 
@@ -44,7 +45,7 @@ namespace Kairos {
 
 	}
 
-	void SwapChain::CreateDXGISwapChain(HWND hWnd)
+	void SwapChain::CreateDXGISwapChain(Window& window)
 	{
 		ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
@@ -55,7 +56,7 @@ namespace Kairos {
 		ComPtr<IDXGISwapChain1> swapChainTemp;
 		result = dxgiFactory->CreateSwapChainForHwnd(
 			m_Device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetD3DCommandQueue(),
-			hWnd,
+			window.GetNativeWindow(),
 			&m_Desc,
 			nullptr,								// optional for full screen swap chain
 			nullptr,
@@ -63,7 +64,7 @@ namespace Kairos {
 		);
 		KRS_CORE_ASSERT(SUCCEEDED(result), "Issue with creating swap chain");
 
-		result = dxgiFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER); // disalbe alt + enter
+		result = dxgiFactory->MakeWindowAssociation(window.GetNativeWindow(), DXGI_MWA_NO_ALT_ENTER); // disalbe alt + enter
 		KRS_CORE_ASSERT(SUCCEEDED(result), "Issuew ith disabling Alt Enter");
 
 		result = swapChainTemp.As(&m_dSwapChain);

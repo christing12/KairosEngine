@@ -12,6 +12,7 @@ namespace Kairos {
 	class SwapChain;
 	class CommandContext;
 	class ColorBuffer;
+	class Window;
 
 	class Renderer {
 	public:
@@ -27,7 +28,6 @@ namespace Kairos {
 		//static void CreatePipeline();
 	public:
 		Renderer() = default;
-		Renderer(HWND hWnd);
 		~Renderer();
 		class GraphicsContext& GetGraphicsContext();
 
@@ -38,16 +38,14 @@ namespace Kairos {
 		ID3D12Device2* GetDevice();
 		RenderDevice* GetRenderDevice() { return m_Device.get(); }
 
-		void Initialize();
+		void Initialize(Window& window);
 		void SubmitCommandContext(Ref<class CommandContext> commandContext, bool waitForCompletion);
 		void Shutdown();
 
 		void Render();
 		void Present();
 
-
-		HWND m_HWND;
-
+	public:
 		Ref<RenderDevice> m_Device;
 		Ref<SwapChain> m_SwapChain;
 		size_t m_currBackBuffer = 0;

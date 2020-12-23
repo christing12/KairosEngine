@@ -9,7 +9,9 @@ namespace Kairos {
 	{
 		KRS_CORE_ASSERT(sInstance == nullptr, "Input has already been initialized");
 		sInstance = &Input();
-		
+		for (int i = 0; i < 256; i++) {
+			sInstance->keyState[i] = false;
+		}
 	}
 
 	void Input::OnEvent(Event& e)
@@ -24,7 +26,7 @@ namespace Kairos {
 
 	bool Input::IsKeyDown(KeyCode keycode)
 	{
-		return false;
+		return sInstance->keyState[keycode];
 	}
 
 	bool Input::IsMouseButtonDown(MouseCode mousecode)
@@ -44,12 +46,14 @@ namespace Kairos {
 	}
 
 	bool Input::OnKeyPressed(KeyPressedEvent& e) {
-		//std::cout << e.ToString() << std::endl;
+		std::cout << e.ToString() << std::endl;
+		sInstance->keyState[e.GetKeyCode()] = true;
 		return true;
 	}
 	bool Input::OnKeyReleased(KeyReleasedEvent& e)
 	{
 		//std::cout << e.ToString() << std::endl;
+		sInstance->keyState[e.GetKeyCode()] = false;
 		return true;
 	}
 	bool Input::OnMousePressed(MouseButtonPressedEvent& e)

@@ -5,6 +5,8 @@
 #include "Events/MouseEvent.h"
 #include "Events/WindowEvent.h"
 
+#include <map>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class Input {
@@ -27,6 +29,7 @@ private:
 	bool OnMouseReleased(MouseButtonReleasedEvent& e);
 private:
 	static Input* sInstance;
+	bool keyState[256] = { false };
 };
 
 KRS_END_NAMESPACE

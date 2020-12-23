@@ -6,16 +6,10 @@
 #include "RenderDevice.h"
 #include "SwapChain.h"
 #include "Texture.h"
+#include "Core/Window.h"
 
 namespace Kairos {
     const Uint32 NUM_FRAMES = 2; // replace this somewhere else
-
-
-    Renderer::Renderer(HWND hWnd)
-        : m_HWND(hWnd)
-    {
-
-    }
 
     Renderer::~Renderer()
     {
@@ -48,7 +42,7 @@ namespace Kairos {
         return m_Device->GetD3DDevice();
     }
 
-    void Renderer::Initialize()
+    void Renderer::Initialize(Window& window)
     {
 #if defined(_DEBUG)
         ComPtr<ID3D12Debug> debugInterface;
@@ -78,7 +72,7 @@ namespace Kairos {
         scDesc.Scaling = DXGI_SCALING_STRETCH;
         scDesc.Flags = 0;
 
-        eFactory->CreateSwapChain(m_Device, scDesc, m_SwapChain, m_HWND);
+        eFactory->CreateSwapChain(m_Device, scDesc, m_SwapChain, window);
 
         // Default rasterizer states
         DefaultRasterizer.FillMode = D3D12_FILL_MODE_SOLID;
@@ -92,8 +86,6 @@ namespace Kairos {
         DefaultRasterizer.AntialiasedLineEnable = FALSE;
         DefaultRasterizer.ForcedSampleCount = 0;
         DefaultRasterizer.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-
 
         m_Scissor = CD3DX12_RECT(0, 0, scDesc.Width, scDesc.Height);
         m_Viewport = CD3DX12_VIEWPORT(0.f, 0.f, scDesc.Width, scDesc.Height, 0.f, 1.f);

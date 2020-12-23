@@ -13,6 +13,24 @@ void MeshRenderer::DoSomething()
 {
 }
 
+void MeshRenderer::OnEvent(Kairos::Event& e)
+{
+	Application::OnEvent(e);
+	mCamera.OnEvent(e);
+	EventDispatcher dispatcher(e);
+}
+
+void MeshRenderer::Update(float deltaTime)
+{
+	//mCamera.Update(deltaTime);
+}
+
+void MeshRenderer::Shutdown()
+{
+	Application::Shutdown();
+	mEditor.Shutdown();
+}
+
 void MeshRenderer::Render()
 {
 	GraphicsContext& gfxContext = mRenderer->GetGraphicsContext();
@@ -38,7 +56,7 @@ void MeshRenderer::Render()
 	gfxContext.SetDynamicDescriptors(1, 0, 1, mTexture->GetSRV());
 	TestCubes(gfxContext);
 
-	//mEditor->Render(gfxContext);
+	mEditor.Render(gfxContext);
 
 	gfxContext.Submit(true);
 }
@@ -74,6 +92,11 @@ void MeshRenderer::TestCubes(Kairos::GraphicsContext& context)
 
 void MeshRenderer::InitEngine()
 {
+	float aspectRatio = WINDOW_WIDTH / WINDOW_HEIGHT;
+	mEditor = EngineIMGUI(mRenderer->m_Device.get(), mWindow.GetNativeWindow());
+	mCamera = EditorCamera(XMMatrixPerspectiveFovLH(45.0f * (3.14f / 180.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f));
+	
+
 	auto* pDevice = mRenderer->GetDevice();
 	{
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
@@ -137,7 +160,6 @@ void MeshRenderer::InitEngine()
 		mPSO->Finalize();
 	}
 
-	float aspectRatio = WINDOW_WIDTH / WINDOW_HEIGHT;
 
 	{
 		mMesh = CreateRef<Mesh>(mRenderer->m_Device.get(), "C:/Users/Chris Ting/Desktop/MeshRenderer/Data/Chair.obj");

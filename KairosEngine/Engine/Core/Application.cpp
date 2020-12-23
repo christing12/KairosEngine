@@ -9,11 +9,11 @@
 namespace Kairos {
 	void Application::Create()
 	{
-		mWindow = Window(WindowProps());
+		mWindow.Init(1280, 1024);
 		mWindow.SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		Input::Init();
-		mRenderer = CreateScope<Renderer>((mWindow.GetNativeWindow()));
-		mRenderer->Initialize();
+		mRenderer = CreateScope<Renderer>();
+		mRenderer->Initialize(mWindow);
 	}
 
 	void Application::Run()

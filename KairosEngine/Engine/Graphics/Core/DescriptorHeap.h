@@ -8,6 +8,8 @@
 #include <set>
 #include <queue>
 
+#include <wrl.h>
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;
