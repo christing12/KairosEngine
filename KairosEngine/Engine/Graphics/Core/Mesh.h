@@ -2,24 +2,41 @@
 
 #include <Graphics/Core/GraphicsTypes.h>
 
+struct aiMesh;
+
 KRS_BEGIN_NAMESPACE(Kairos)
+
+class RenderDevice;
+class Buffer;
+
+//
+//struct MeshBuffer {
+//	Buffer VertexBuffer;
+//	Buffer IndexBuffer;
+//	D3D12_VERTEX_BUFFER_VIEW VBufferView;
+//	D3D12_INDEX_BUFFER_VIEW IBufferView;
+//
+//	MeshBuffer()
+//};
+//typedef struct MeshBuffer MeshBuffer;
+
 
 class Mesh {
 public:
-
-
-
-	Mesh(class RenderDevice* pDevice, const char* filename);
-
 	D3D12_VERTEX_BUFFER_VIEW GetVertexView() const;
 	D3D12_INDEX_BUFFER_VIEW GetIndexView() const;
 
-	std::vector<VertTex> m_Vertices;
-	std::vector<Uint16> m_Indices;
+	static std::shared_ptr<Mesh> CreateFromFile(RenderDevice* pDevice, const char* file);
+	Mesh(class RenderDevice* pDevice, const aiMesh* mesh);
+
+	std::vector<Vertex> mVertices;
+	std::vector<Uint16> mIndices;
 private:
+
+
 	class RenderDevice* m_Device;
-	Ref<class Buffer> m_VertexBuffer;
-	Ref<class Buffer> m_IndexBuffer;
+	Ref<Buffer> m_VertexBuffer;
+	Ref<Buffer> m_IndexBuffer;
 
 
 };

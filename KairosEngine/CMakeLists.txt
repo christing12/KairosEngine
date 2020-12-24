@@ -45,7 +45,6 @@ source_group("Core\\Events" FILES ${KRS_EVENT_INC})
 
 set(KRS_GRAPHICS_CORE_INC
     Buffer.h
-    Camera.h
     CommandAllocatorPool.h
     CommandContext.h
     CommandQueue.h
@@ -68,7 +67,6 @@ set(KRS_GRAPHICS_CORE_INC
 
 set(KRS_GRAPHICS_CORE_SRC
     Buffer.cpp
-    Camera.cpp
     CommandAllocatorPool.cpp
     CommandContext.cpp
     CommandQueue.cpp
@@ -114,6 +112,9 @@ set(KRS_CORE_SHADERS
     Constants.hlsl
     PixelShader.hlsl
     VertexShader.hlsl
+    pbr.hlsl
+    tonemap.hlsl
+    skybox.hlsl
 )
 list(TRANSFORM KRS_CORE_SHADERS PREPEND "Engine/Graphics/Shaders/")
 source_group("Graphics\\Shaders" FILES ${KRS_CORE_SHADERS})
@@ -135,6 +136,34 @@ source_group(" " FILES ${KRS_GENERAL_INC} ${KRS_GENERAL_SRC})
 
 
 
+set(KRS_FRAMEWORK_INC
+    Scene.h
+    Camera.h
+
+)
+set(KRS_FRAMEWORK_SRC
+    Scene.cpp
+    Camera.cpp
+)
+list(TRANSFORM KRS_FRAMEWORK_INC PREPEND "Engine/Framework/")
+list(TRANSFORM KRS_FRAMEWORK_SRC PREPEND "Engine/Framework/")
+source_group("Framework" FILES ${KRS_SCENE_INC} ${KRS_SCENE_SRC})
+
+
+set(KRS_UTIL_INC
+    JSONUtil.h
+)
+
+set(KRS_UTIL_SRC
+    JSONUtil.cpp
+)
+list(TRANSFORM KRS_UTIL_INC PREPEND "Engine/Util/")
+list(TRANSFORM KRS_UTIL_SRC PREPEND "Engine/Util/")
+source_group("Util" FILES ${KRS_UTIL_INC} ${KRS_UTIL_SRC})
+
+
+
+
 set(KRS_ALL_INC
     ${KRS_GENERAL_INC}
     ${KRS_CORE_INC}
@@ -142,6 +171,8 @@ set(KRS_ALL_INC
     ${KRS_GRAPHICS_CORE_INC}
     ${KRS_CORE_SHADERS}
     ${KRS_EDITOR_INC}
+    ${KRS_FRAMEWORK_INC}
+    ${KRS_UTIL_INC}
     
 )
 
@@ -150,6 +181,8 @@ set(KRS_ALL_SRC
     ${KRS_CORE_SRC}
     ${KRS_GRAPHICS_CORE_SRC}
     ${KRS_EDITOR_SRC}
+    ${KRS_FRAMEWORK_SRC}
+    ${KRS_UTIL_SRC}
 )
 
 add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
@@ -184,7 +217,7 @@ target_include_directories(${LIB_NAME}
 
 # ---------------- PRECOMPILED HEADERS -------------- #
 
-set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )
@@ -200,4 +233,9 @@ set_source_files_properties(Engine/krspch.cpp
 target_compile_definitions(${LIB_NAME}
     PUBLIC KRS_DEBUG
     PUBLIC KRS_PLATFORM_WINDOWS
+)
+
+target_compile_definitions(${LIB_NAME}
+    PUBLIC -DUNICODE
+    PUBLIC -D_UNICODE
 )

@@ -50,6 +50,8 @@ target_link_libraries(${APP_NAME}
     PUBLIC KairosEngine
 )
 
+add_compile_options(-D_UNICODE)
+add_compile_options(-DUNICODE)
 
 # Precompiled Header Flags
 

@@ -8,6 +8,10 @@ struct ConstantBuffer {
 	Vector4 padding[48];
 };
 
+struct Lighting {
+	
+};
+
 
 class MeshRenderer : public Kairos::Application {
 public:
@@ -38,11 +42,22 @@ private:
 	std::shared_ptr<Kairos::Mesh> mMesh;
 
 	ConstantBuffer cbPerObject;
+
+private:
+	std::shared_ptr<Kairos::PipelineStateObject> mSkyboxPSO;
+	std::shared_ptr<Kairos::RootSignature> mSkyboxSignature;
+	std::shared_ptr<Kairos::Mesh> mSkyboxMesh;
+	D3D12_INDEX_BUFFER_VIEW skyboxIView;
+	D3D12_VERTEX_BUFFER_VIEW skyboxVView;
+
+	std::shared_ptr<Kairos::Texture> skyboxTexture;
 private:
 	Kairos::EngineIMGUI mEditor;
 	Kairos::EditorCamera mCamera;
 
 private:
+
+
 	void TestCubes(Kairos::GraphicsContext& context);
 	Matrix cameraProjMat; // this will store our projection matrix
 	Matrix cameraViewMat; // this will store our view matrix

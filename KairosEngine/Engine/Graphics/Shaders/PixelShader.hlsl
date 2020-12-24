@@ -12,6 +12,6 @@ struct VOut
 
 float4 main(VOut pIn) : SV_TARGET
 {
-    return float4(1.0f, 1.0f, 1.0f, 1.0f);
-    //return t1.Sample(s1, pIn.texCoord); 
+    //return float4(1.0f, 1.0f, 1.0f, 1.0f);
+    return t1.Sample(s1, pIn.texCoord); 
 }

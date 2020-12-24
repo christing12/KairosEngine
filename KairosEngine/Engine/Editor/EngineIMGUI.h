@@ -19,5 +19,7 @@ namespace Kairos {
 		RenderDevice* m_Device;
 		HWND m_HWND;
 		DescriptorAllocation m_Allocation;
+
+		void InitColors();
 	};
 }

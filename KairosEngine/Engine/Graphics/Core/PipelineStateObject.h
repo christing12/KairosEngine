@@ -1,6 +1,8 @@
 #pragma once
 
 namespace Kairos {
+	class RootSignature;
+
 	class PipelineStateObject {
 	public:
 		PipelineStateObject(class RenderDevice* pDevice);
@@ -11,7 +13,7 @@ namespace Kairos {
 	public:
 		void Finalize();
 
-		void SetRootSignature(ID3D12RootSignature* signature);
+		void SetRootSignature(RootSignature& signature);
 		void SetRasterizerState(const D3D12_RASTERIZER_DESC& rasterDesc);
 		void SetBlendState(const D3D12_BLEND_DESC& blendDesc);
 		void SetTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE topology);

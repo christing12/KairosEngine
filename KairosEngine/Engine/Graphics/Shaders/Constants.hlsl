@@ -15,3 +15,5 @@ struct ColorMul {
 
 //ConstantBuffer<ColorMul> ColorMulCB : register(b0);
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
+
+

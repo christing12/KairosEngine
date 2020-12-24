@@ -42,7 +42,7 @@ namespace Kairos {
 	}
 
 	bool Input::OnKeyPressed(KeyPressedEvent& e) {
-		std::cout << e.ToString() << std::endl;
+	//	std::cout << e.ToString() << std::endl;
 		Input::Get()->keyState[e.GetKeyCode()] = true;
 		return true;
 	}

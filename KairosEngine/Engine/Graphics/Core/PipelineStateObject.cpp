@@ -39,9 +39,9 @@ namespace Kairos {
 	{
 		m_Desc.PS = pixelBytecode;
 	}
-	void PipelineStateObject::SetRootSignature(ID3D12RootSignature* signature)
+	void PipelineStateObject::SetRootSignature(RootSignature& sig)
 	{
-		m_Desc.pRootSignature = signature;
+		m_Desc.pRootSignature = sig.GetD3DRootSignature();
 	}
 	void PipelineStateObject::SetRasterizerState(const D3D12_RASTERIZER_DESC& rasterDesc)
 	{

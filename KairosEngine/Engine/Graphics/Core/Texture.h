@@ -16,7 +16,7 @@ public:
 	Texture(RenderDevice* pDevice, D3D12_RESOURCE_DESC desc, D3D12_RESOURCE_STATES initState, const D3D12_CLEAR_VALUE* clearVal = nullptr);
 	Texture(RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3D12Resource> initResource,
 		D3D12_RESOURCE_STATES initState);
-	Texture(RenderDevice* pDevice, const char* filename);
+	Texture(RenderDevice* pDevice, const char* filename, DXGI_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM, int numChannels = 0);
 
 	Uint32 Width() const { return m_Width; }
 	Uint32 Height() const { return m_Height; }

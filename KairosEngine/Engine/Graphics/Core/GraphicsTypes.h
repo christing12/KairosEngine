@@ -5,15 +5,11 @@
 using namespace DirectX::SimpleMath;
 
 struct Vertex {
-	Vertex() {}
-	Vertex(float px, float py, float pz, float c1, float c2, float c3, float c4)
-		: pos(px, py, pz)
-		, color(c1, c2, c3, c4)
-	{}
-	Vertex(Vector3 inPos, Vector4 inCol) : pos(inPos), color(inCol) {}
-
-	Vector3 pos;
-	Vector4 color;
+	Vector3 position;
+	Vector3 normal;
+	Vector3 tangent;
+	Vector3 bitangent;
+	Vector3 texCoord;
 };
 
 struct VertTex {

@@ -3,19 +3,15 @@
 #include "Core/Input.h"
 
 namespace Kairos {
-    EditorCamera::EditorCamera(const Matrix& projMat)
-        : Camera(projMat)
+    EditorCamera::EditorCamera(const Matrix& projMat, Vector3 startPos)
+        : Camera(projMat, startPos)
     {
-        m_Rotation = Vector3(90.0f, 0.0f, 0.0f);
-        m_Target = Vector3(0.0f, 0.0f, 0.0f);
+        mRotation = Vector3(0.0f, 0.0f, 0.0f);
+        mTarget = Vector3(0.0f, 0.0f, 0.0f);
 
-        m_DistFromTarget = Vector3::Distance(Vector3(0.0f, 0.0f, 4.0f), m_Target);
-        m_Pitch = 0.0f;
-        m_Yaw = Math::Pi;
-       /* m_Yaw = 3.0f * Math::Pi / 4.0f;
-        m_Pitch = Math::Pi / 4.0f;*/
+    //    mDistFromTarget = Vector3::Distance(m_Position, m_Target);
 
-        UpdateCameraView();
+     //   UpdateCameraView();
     }
     void EditorCamera::Update(float deltaTime)
     {
@@ -40,39 +36,6 @@ namespace Kairos {
         dispatcher.Dispatch<MouseScrolledEvent>(BIND_EVENT_FN(EditorCamera::OnMouseScroll));
     }
 
-    Quaternion EditorCamera::GetOrientation() const
-    {
-        // y x z
-        return Quaternion::CreateFromYawPitchRoll(m_Yaw, m_Pitch, 0.0f);
-        
-       // return Quaternion(Vector3(-m_Pitch, -m_Yaw, 0.0f));
-    }
-
-    Vector3 EditorCamera::GetUpDir() const
-    {
-        return Vector3::Transform(Vector3::Up, GetOrientation());
-    }
-
-    Vector3 EditorCamera::GetRightDir() const
-    {
-        return Vector3::Transform(Vector3::Right, GetOrientation());
-    }
-
-    Vector3 EditorCamera::GetForward() const
-    {
-        return Vector3::Transform(Vector3::Backward, GetOrientation());
-    }
-
-    void EditorCamera::UpdateCameraView()
-    {
-        m_Position = CalculatePosition();
-
-        Quaternion orientation = GetOrientation();
-        m_ViewMatrix = Matrix::CreateFromQuaternion(orientation) 
-            * Matrix::CreateTranslation(m_Position);
-        m_ViewMatrix = m_ViewMatrix.Invert();
-
-    }
     bool EditorCamera::OnMouseScroll(MouseScrolledEvent& event)
     {
         float delta = event.GetYOffset() * 0.1f;
@@ -84,29 +47,24 @@ namespace Kairos {
     void EditorCamera::MousePan(const Vector2& delta)
     {
         auto [xSpeed, ySpeed] = PanSpeed();
-        m_Target += GetRightDir() * delta.x * xSpeed * m_DistFromTarget;
-        m_Target += GetUpDir() * delta.y * ySpeed * m_DistFromTarget;
+        mTarget += GetRightDir() * delta.x * xSpeed * mDistFromTarget;
+        mTarget += GetUpDir() * delta.y * ySpeed * mDistFromTarget;
     }
 
     void EditorCamera::MouseRotate(const Vector2& delta)
     {
         float yawSign = GetUpDir().y < 0 ? -1.0f : 1.0f;
-        m_Yaw += yawSign * delta.x * RotationSpeed();
-        m_Pitch += delta.y * RotationSpeed();
+        mRotation.y += yawSign * delta.x * RotationSpeed();
+        mRotation.x += delta.y * RotationSpeed();
     }
 
     void EditorCamera::MouseZoom(float delta)
     {
-        m_DistFromTarget -= delta * ZoomSpeed();
-        if (m_DistFromTarget < 1.0f) {
-            m_Target += GetForward();
-            m_DistFromTarget = 1.0f;
+        mDistFromTarget -= delta * ZoomSpeed();
+        if (mDistFromTarget < 1.0f) {
+            mTarget += GetForward();
+            mDistFromTarget = 1.0f;
         }
-    }
-
-    Vector3 EditorCamera::CalculatePosition()
-    {
-        return m_Target - GetForward() * m_DistFromTarget;
     }
 
 
@@ -127,7 +85,7 @@ namespace Kairos {
     }
     float EditorCamera::ZoomSpeed() const
     {
-        float distance = m_DistFromTarget * 0.2f;
+        float distance = mDistFromTarget * 0.2f;
         distance = Math::Max<float>(distance, 0.0f);
         float speed = distance * distance;
 

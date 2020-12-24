@@ -36,23 +36,12 @@ namespace Kairos {
 		//m_Device->GetD3DDevice()->CreateRenderTargetView(m_Resource.Get(), nullptr, m_RTV.GetDescriptorHandle());
 	}
 
-	Texture::Texture(RenderDevice* pDevice, const char* filename)
+	Texture::Texture(RenderDevice* pDevice, const char* filename, DXGI_FORMAT format, int numChannels)
 		: Resource(pDevice)
 	{
-		//stbi_set_flip_vertically_on_load(true);
+		stbi_set_flip_vertically_on_load(true);
 
-		unsigned char* img = stbi_load(filename, &m_Width, &m_Height, &m_Channels, 0);
-		unsigned char* img2 = new unsigned char[m_Width * m_Height * 4];
-
-		for (int i = 0; i < m_Width * m_Height; i++) {
-			img2[4 * i] = img[3 * i];
-			img2[4 * i + 1] = img[3 * i + 1];
-			img2[4 * i + 2] = img[3 * i + 2];
-			img2[4 * i + 3] = 255;
-		}
-
-
-		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		unsigned char* img = stbi_load(filename, &m_Width, &m_Height, &m_Channels, numChannels);
 
 		D3D12_HEAP_PROPERTIES heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		m_Desc = CD3DX12_RESOURCE_DESC::Tex2D(format, m_Width, m_Height);
@@ -71,7 +60,7 @@ namespace Kairos {
 		KRS_CORE_ASSERT(SUCCEEDED(hr) && m_Resource != nullptr, "Issue with creating a resource");
 
 		D3D12_SUBRESOURCE_DATA subresource = {};
-		subresource.pData = img2;
+		subresource.pData = img;
 		subresource.RowPitch = m_Width * 4;
 		subresource.SlicePitch = m_Height;
 
@@ -83,7 +72,6 @@ namespace Kairos {
 
 		CommandContext::InitTexture(m_Device, *this, 1, &subresources);
 		InitTextureViews();
-		delete[] img2;
 		stbi_image_free(img);
 	}
 

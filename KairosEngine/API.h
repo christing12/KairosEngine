@@ -13,9 +13,9 @@
 
 #include "Engine/Editor/EngineIMGUI.h"
 #include "Engine/Editor/EditorCamera.h"
+#include "Engine/Framework/Camera.h"
 
 #include "Engine/Graphics/Core/Buffer.h"
-#include "Engine/Graphics/Core/Camera.h"
 #include "Engine/Graphics/Core/CommandContext.h"
 #include "Engine/Graphics/Core/DescriptorHeap.h"
 #include "Engine/Graphics/Core/DynamicDescriptorHeap.h"

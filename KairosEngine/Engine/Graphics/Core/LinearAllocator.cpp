@@ -8,7 +8,7 @@ namespace Kairos {
 		: m_Device(pDevice)
 		, m_InternalType(type)
 	{
-		m_PageSize = type == CPU_WRITABLE ? _4MB : _64KB;
+		m_PageSize = type == CPU_WRITABLE ? _128MB : _64KB;
 	}
 	void LinearAllocator::Reset()
 	{
