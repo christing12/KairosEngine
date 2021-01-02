@@ -12,12 +12,6 @@ static D3D12_INPUT_ELEMENT_DESC PBRLayout[] = {
 	{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
-static D3D12_INPUT_ELEMENT_DESC inputLayout[] =
-{
-	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-};
-
 void MeshRenderer::DoSomething()
 {
 }
@@ -32,6 +26,23 @@ void MeshRenderer::OnEvent(Kairos::Event& e)
 void MeshRenderer::Update(float deltaTime)
 {
 	mCamera.Update(deltaTime);
+	m_CameraData.viewProjMat = mCamera.GetViewProjMat();
+	m_CameraData.cameraPos = mCamera.GetPos();
+	cbSkybox.viewRotProjMat = mCamera.GetViewRotMat() * mCamera.GetProjMat();
+
+	{
+		Matrix rotXMat = Matrix::CreateRotationX(0.001f);
+		Matrix rotYMat = Matrix::CreateRotationY(0.002f);
+		Matrix rotZMat = Matrix::CreateRotationZ(0.0003f);
+
+		Matrix rotMat = cube1RotMat * rotXMat * rotYMat * rotZMat;
+		cube1RotMat = rotMat;
+
+		Matrix translationMat = Matrix::CreateTranslation(cube1Position);
+
+		Matrix worldMat = rotMat * translationMat;
+		cube1WorldMat = worldMat;
+	}
 }
 
 void MeshRenderer::Shutdown()
@@ -42,6 +53,7 @@ void MeshRenderer::Shutdown()
 
 void MeshRenderer::Render()
 {
+
 	GraphicsContext& gfxContext = mRenderer->GetGraphicsContext();
 	auto& currBackBuffer = mRenderer->GetCurrBackBuffer();
 
@@ -57,14 +69,16 @@ void MeshRenderer::Render()
 	gfxContext.SetViewportScissorRect(mRenderer->m_Viewport, mRenderer->m_Scissor);
 	gfxContext.SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// skybox rendering
+	////// skybox rendering
 	{
+		
 		gfxContext.SetPipelineState(*(mSkyboxPSO.get()));
 		gfxContext.SetRootSignature(*(mSkyboxSignature.get()));
 		gfxContext.SetVertexBuffers(0, 1, skyboxVView);
 		gfxContext.SetIndexBuffer(skyboxIView);
-		gfxContext.SetDynamicDescriptors(1, 0, 1, )
-
+		gfxContext.SetDynamicCBV(0, sizeof(cbSkybox), &cbSkybox);
+		gfxContext.SetDynamicDescriptors(1, 0, 1, skyboxTexture->GetSRV());
+		gfxContext.DrawIndexedInstance(mSkyboxMesh->mIndices.size(), 1, 0, 0, 0);
 	}
 
 
@@ -75,9 +89,20 @@ void MeshRenderer::Render()
 
 		gfxContext.SetVertexBuffers(0, 1, mVBView);
 		gfxContext.SetIndexBuffer(mIBView);
-		//gfxContext.SetDynamicCBV(2, )
-		gfxContext.SetDynamicDescriptors(1, 0, 1, mTexture->GetSRV());
-		TestCubes(gfxContext);
+
+		cbPerObject.modelMat = cube1WorldMat;
+		cbPerObject.viewProjMat = mCamera.GetViewProjMat();
+
+		gfxContext.SetDynamicCBV(0, sizeof(cbPerObject), &cbPerObject);
+		gfxContext.SetDynamicCBV(1, sizeof(Light), &light);
+		gfxContext.SetDynamicCBV(2, sizeof(CameraData), &m_CameraData);
+		gfxContext.SetDynamicDescriptors(3, 0, 4, mTexture->GetSRV());
+		//gfxContext.SetDynamicDescriptors(3, 1, 1, mNormalMap->GetSRV());
+		gfxContext.DrawIndexedInstance(mMesh->mIndices.size(), 1, 0, 0, 0);
+		//
+		//cbPerObject.modelMat = Matrix::CreateTranslation(light.position);
+		//gfxContext.SetDynamicCBV(0, sizeof(cbPerObject), &cbPerObject);
+		//gfxContext.DrawIndexedInstance(mMesh->mIndices.size(), 1, 0, 0, 0);
 	}
 
 
@@ -91,38 +116,32 @@ void MeshRenderer::Present()
 	mRenderer->Present();
 }
 
-void MeshRenderer::TestCubes(Kairos::GraphicsContext& context)
+void MeshRenderer::LoadPBRTextures()
 {
-	{
-		// rotation matrices
-		Matrix rotXMat = Matrix::CreateRotationX(0.001f);
-		Matrix rotYMat = Matrix::CreateRotationY(0.002f);
-		Matrix rotZMat = Matrix::CreateRotationZ(0.0003f);
-
-		Matrix rotMat = cube1RotMat * rotXMat * rotYMat * rotZMat;
-		cube1RotMat = rotMat;
-
-		Matrix translationMat = Matrix::CreateTranslation(cube1Position);
-
-		Matrix worldMat = rotMat * translationMat;
-		cube1WorldMat = worldMat;
-
-		Matrix wvpMat = cube1WorldMat * mCamera.GetViewMat() * mCamera.GetProjMat();
-		cbPerObject.mvpMat = wvpMat.Transpose();
-
-		context.SetDynamicCBV(0, sizeof(cbPerObject), &cbPerObject);
-		context.DrawIndexedInstance(mMesh->mIndices.size(), 1, 0, 0, 0);
-	}
+	mTexture = Texture::LoadFromAsset(mRenderer->GetRenderDevice(), "Cerberus_A.tx", DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	mNormalMap = Texture::LoadFromAsset(mRenderer->GetRenderDevice(), "../../Data/textures/assets_export/Cerberus_N.tx");
+	mMetalTex = Texture::LoadFromAsset(mRenderer->GetRenderDevice(), "../../Data/textures/assets_export/Cerberus_M.tx", DXGI_FORMAT_R8_UNORM);
+	mRoughnessMap = Texture::LoadFromAsset(mRenderer->GetRenderDevice(), "../../Data/textures/assets_export/Cerberus_R.tx", DXGI_FORMAT_R8_UNORM);
 }
 
 void MeshRenderer::InitEngine()
 {
+	projectDir = Filesystem::GetRelativePath("C:/Users/Chris Ting/Desktop/MeshRenderer/Data/");
+	KRS_CORE_INFO(projectDir);
+	LoadPBRTextures();
+
+
 	float aspectRatio = WINDOW_WIDTH / WINDOW_HEIGHT;
 	mEditor = EngineIMGUI(mRenderer->m_Device.get(), mWindow.GetNativeWindow());
-	std::wstring filePath = L"C:/Users/Chris Ting/Desktop/MeshRenderer/KairosEngine/Engine/Graphics/Shaders/";
+	std::wstring filePath = L"../../KairosEngine/Engine/Graphics/Shaders/";
+
+	const  D3D12_INPUT_ELEMENT_DESC skyboxLayout[] = {
+		{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	};
+
 
 	D3D12_SAMPLER_DESC sampler = {};
-	sampler.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+	sampler.Filter = D3D12_FILTER_ANISOTROPIC;
 	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
@@ -132,37 +151,77 @@ void MeshRenderer::InitEngine()
 	sampler.MinLOD = 0.f;
 	sampler.MaxLOD = D3D12_FLOAT32_MAX;
 
-	auto* pDevice = mRenderer->GetDevice();
-	{
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+	D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-		mSig = CreateRef<RootSignature>(mRenderer->m_Device.get(), 2, 1);
+	auto* pDevice = mRenderer->GetDevice();
+
+	//// debug stuff
+	//{
+	//	m_WhiteRS = CreateRef<RootSignature>(mRenderer->m_Device.get(), 0, 0);
+	//	m_WhiteRS->Finalize(L"DEBUG ROOT SIGNATURE", rootSignatureFlags);
+
+	//	ShaderCreateInfo Vinfo(ShaderType::Vertex, filePath + L"white.hlsl", "main");
+	//	m_WhiteVS = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), Vinfo);
+
+	//	ShaderCreateInfo PInfo(ShaderType::Pixel, filePath + L"white.hlsl", "main_ps");
+	//	m_WhitePS = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), PInfo);
+
+	//	m_WhitePSO = CreateRef<PipelineStateObject>(mRenderer->GetRenderDevice());
+
+	//	ID3DBlob* blob = m_WhitePS->GetD3DBlob();
+	//	ID3DBlob* sBlob = mPixelShader->GetD3DBlob();
+
+	//	m_WhitePSO->SetInputLayout(D3D12_INPUT_LAYOUT_DESC{ skyboxLayout, _countof(skyboxLayout) });
+	//	m_WhitePSO->SetRootSignature(*m_WhiteRS);
+	//	m_WhitePSO->SetVertexShader(CD3DX12_SHADER_BYTECODE(blob));
+	//	m_WhitePSO->SetPixelShader(CD3DX12_SHADER_BYTECODE(sBlob));
+	//	m_WhitePSO->SetTopology(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+
+	//	m_WhitePSO->SetRenderTarget(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_D32_FLOAT);
+	//	m_WhitePSO->SetSampleMask(0xffffffff);
+
+	//	D3D12_RASTERIZER_DESC rasterDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	//	rasterDesc.FrontCounterClockwise = true;
+	//	m_WhitePSO->SetRasterizerState(rasterDesc);
+	//	m_WhitePSO->SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
+	//	m_WhitePSO->SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
+
+	//	m_WhitePSO->Finalize();
+	//}
+
+
+	{
+
+
+		mSig = CreateRef<RootSignature>(mRenderer->m_Device.get(), 4, 1);
 
 		(*mSig)[0].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
+		(*mSig)[1].InitAsConstantBuffer(1, D3D12_SHADER_VISIBILITY_PIXEL);
+		(*mSig)[2].InitAsConstantBuffer(2, D3D12_SHADER_VISIBILITY_PIXEL);
 
-		(*mSig)[1].InitAsDescriptorTable(1, D3D12_SHADER_VISIBILITY_PIXEL);
-		(*mSig)[1].SetDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-
-
+		(*mSig)[3].InitAsDescriptorTable(1, D3D12_SHADER_VISIBILITY_PIXEL);
+		(*mSig)[3].SetDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 0, 0);
 
 		mSig->InitStaticSampler(0, sampler, D3D12_SHADER_VISIBILITY_PIXEL);
 
-
-		mTexture = CreateRef<Texture>(mRenderer->GetRenderDevice(),
-			"C:/Users/Chris Ting/Desktop/MeshRenderer/Data/textures/wall.jpg", DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 4);
+		
 		mSig->Finalize(L"ROOT SIGNATURE", rootSignatureFlags);
 	}
+	skyboxTexture = Texture::LoadFromAsset(mRenderer->GetRenderDevice(),
+		(projectDir + "textures/assets_export/environment.tx").c_str(), DXGI_FORMAT_R32G32B32A32_FLOAT);
+
+
 
 	{
 
-		ShaderCreateInfo Vinfo(ShaderType::Vertex, filePath + L"VertexShader.hlsl", "main");
+		ShaderCreateInfo Vinfo(ShaderType::Vertex, filePath + L"phong.hlsl", "main_vs");
 		mVertexShader = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), Vinfo);
 
-		ShaderCreateInfo PInfo(ShaderType::Pixel, filePath + L"PixelShader.hlsl", "main");
+		ShaderCreateInfo PInfo(ShaderType::Pixel, filePath + L"phong.hlsl", "main_ps");
 		mPixelShader = CreateRef<Kairos::Shader>(mRenderer->GetRenderDevice(), PInfo);
 
 		mPSO = CreateRef<PipelineStateObject>(mRenderer->GetRenderDevice());
@@ -170,7 +229,7 @@ void MeshRenderer::InitEngine()
 		ID3DBlob* blob = mVertexShader->GetD3DBlob();
 		ID3DBlob* sBlob = mPixelShader->GetD3DBlob();
 
-		mPSO->SetInputLayout(D3D12_INPUT_LAYOUT_DESC{ inputLayout, _countof(inputLayout) });
+		mPSO->SetInputLayout(D3D12_INPUT_LAYOUT_DESC{ PBRLayout, _countof(PBRLayout) });
 		mPSO->SetRootSignature(*mSig);
 		mPSO->SetVertexShader(CD3DX12_SHADER_BYTECODE(blob));
 		mPSO->SetPixelShader(CD3DX12_SHADER_BYTECODE(sBlob));
@@ -191,9 +250,7 @@ void MeshRenderer::InitEngine()
 
 	{
 		// skybox PSO
-		const  D3D12_INPUT_ELEMENT_DESC skyboxLayout[] = {
-			{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		};
+
 		mSkyboxPSO = std::make_shared<PipelineStateObject>(mRenderer->GetRenderDevice());
 		std::unique_ptr<Kairos::Shader> skyboxVS = std::make_unique<Kairos::Shader>(mRenderer->GetRenderDevice(),
 			ShaderCreateInfo(ShaderType::Vertex, filePath + L"skybox.hlsl", "main_vs"));
@@ -201,9 +258,8 @@ void MeshRenderer::InitEngine()
 			ShaderCreateInfo(ShaderType::Pixel, filePath + L"skybox.hlsl", "main_ps"));
 
 		mSkyboxSignature = std::make_shared<Kairos::RootSignature>(mRenderer->m_Device.get(), 2, 1);
-		(*mSkyboxSignature)[0].InitAsDescriptorTable(1, D3D12_SHADER_VISIBILITY_VERTEX);
+		(*mSkyboxSignature)[0].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX, 0);
 		(*mSkyboxSignature)[1].InitAsDescriptorTable(1, D3D12_SHADER_VISIBILITY_PIXEL);
-		(*mSkyboxSignature)[0].SetDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0);
 		(*mSkyboxSignature)[1].SetDescriptorRange(0, D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 		mSkyboxSignature->InitStaticSampler(0, sampler, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -225,14 +281,17 @@ void MeshRenderer::InitEngine()
 		rasterDesc.FrontCounterClockwise = true;
 		mSkyboxPSO->SetRasterizerState(rasterDesc);
 		mSkyboxPSO->SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
-		mSkyboxPSO->SetDepthStencilState(CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT));
+		D3D12_DEPTH_STENCIL_DESC depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		mSkyboxPSO->SetDepthStencilState(depthDesc);
 
 
 		mSkyboxPSO->Finalize();
 	}
 
 	{
-		mMesh = Mesh::CreateFromFile(mRenderer->m_Device.get(), "C:/Users/Chris Ting/Desktop/MeshRenderer/Data/meshes/cube.obj");
+		mMesh = Mesh::CreateFromFile(mRenderer->m_Device.get(), 
+			"C:/Users/Chris Ting/Desktop/MeshRenderer/Data/meshes/cube.obj");
 		mVBView = mMesh->GetVertexView();
 		mIBView = mMesh->GetIndexView();
 
@@ -250,7 +309,7 @@ void MeshRenderer::InitEngine()
 
 
 		// set starting camera state
-		cameraPosition = Vector3(0.0f, 0.0f, 20.0f);
+		cameraPosition = Vector3(0.0f, 0.0f, 5.0f);
 		cameraTarget = Vector3(0.0f, 0.0f, 0.0f);
 		cameraUp = Vector3(0.0f, 1.0f, 0.0f);
 

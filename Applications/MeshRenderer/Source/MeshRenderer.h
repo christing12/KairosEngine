@@ -4,14 +4,27 @@
 
 using namespace DirectX;
 struct ConstantBuffer {
-	DirectX::XMFLOAT4X4 mvpMat;
-	Vector4 padding[48];
+	Matrix modelMat;
+	Matrix viewProjMat;
 };
 
-struct Lighting {
-	
+struct SkyboxCB {
+	Matrix viewRotProjMat;
 };
 
+struct Light {
+	Vector3 diffuseColor = Vector3(1.0f, 0.0f, 0.0f);
+	float padding;
+	Vector3 specularColor = Vector3(0.0f, 1.0f, 1.0f);
+	float padding2;
+	Vector3 position = Vector3::Forward;
+	float specularPower = 0.5f;
+};
+
+struct CameraData {
+	Matrix viewProjMat;
+	Vector3 cameraPos;
+};
 
 class MeshRenderer : public Kairos::Application {
 public:
@@ -26,12 +39,15 @@ public:
 	virtual void Render() override final;
 	virtual void Present() override final;
 
+	std::string projectDir;
+
 private:
 	std::shared_ptr<Kairos::Buffer> mVertexBuffer;
 	std::shared_ptr<Kairos::Buffer> mIndexBuffer;
 	std::shared_ptr<Kairos::PipelineStateObject> mPSO;
 	std::shared_ptr<Kairos::RootSignature> mSig;
 	std::shared_ptr<Kairos::Texture> mTexture;
+	
 
 	D3D12_INDEX_BUFFER_VIEW mIBView;
 	D3D12_VERTEX_BUFFER_VIEW mVBView;
@@ -42,11 +58,21 @@ private:
 	std::shared_ptr<Kairos::Mesh> mMesh;
 
 	ConstantBuffer cbPerObject;
+	SkyboxCB cbSkybox;
+	CameraData m_CameraData;
+private:
+	std::shared_ptr<Kairos::PipelineStateObject> m_WhitePSO;
+	std::shared_ptr<Kairos::RootSignature> m_WhiteRS;
+	std::shared_ptr<Kairos::Shader> m_WhiteVS;
+	std::shared_ptr<Kairos::Shader> m_WhitePS;
+
 
 private:
 	std::shared_ptr<Kairos::PipelineStateObject> mSkyboxPSO;
 	std::shared_ptr<Kairos::RootSignature> mSkyboxSignature;
 	std::shared_ptr<Kairos::Mesh> mSkyboxMesh;
+	std::shared_ptr<Kairos::Buffer> skyboxConstantBuffer;
+	D3D12_CPU_DESCRIPTOR_HANDLE skyboxCPUHandle;
 	D3D12_INDEX_BUFFER_VIEW skyboxIView;
 	D3D12_VERTEX_BUFFER_VIEW skyboxVView;
 
@@ -55,10 +81,17 @@ private:
 	Kairos::EngineIMGUI mEditor;
 	Kairos::EditorCamera mCamera;
 
+
 private:
+	void LoadPBRTextures();
+	std::shared_ptr<Kairos::Texture> mMetalTex;
+	std::shared_ptr<Kairos::Texture> mNormalMap;
+	std::shared_ptr<Kairos::Texture> mRoughnessMap;
 
 
-	void TestCubes(Kairos::GraphicsContext& context);
+private:
+	Light light;
+
 	Matrix cameraProjMat; // this will store our projection matrix
 	Matrix cameraViewMat; // this will store our view matrix
 

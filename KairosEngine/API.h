@@ -6,6 +6,7 @@
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Input.h"
 #include "Engine/Core/Window.h"
+#include "Engine/Core/Filesystem.h"
 
 #include "Engine/Core/Events/KeyEvent.h"
 #include "Engine/Core/Events/MouseEvent.h"
@@ -29,4 +30,5 @@
 #include "Engine/Graphics/Core/Shader.h"
 #include "Engine/Graphics/Core/SwapChain.h"
 #include "Engine/Graphics/Core/Texture.h"
+#include "Engine/Graphics/Core/Image.h"
 

@@ -185,7 +185,19 @@ namespace Kairos {
         context.Submit(true);
     }
 
-    void CommandContext::InitTexture(RenderDevice* pDevice, Resource& resource, Uint32 numSubresources, D3D12_SUBRESOURCE_DATA subresources[])
+    void CommandContext::WriteBuffer(Resource& dest, CPVoid data, size_t sizeInBytes, size_t destOffset)
+    {
+        LinearAllocator::Allocation dynAlloc = RequestUploadMemory(sizeInBytes);
+        memcpy(dynAlloc.CPU, data, sizeInBytes);
+
+
+        if (dest.GetCurrState() != D3D12_RESOURCE_STATE_COPY_DEST)
+            TransitionResource(dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
+        m_dCommandList->CopyBufferRegion(dest.GetResource(), destOffset, dynAlloc.UploadResource.Get(),
+            0, sizeInBytes);
+    }
+
+    void CommandContext::InitTexture(RenderDevice* pDevice, Resource& resource, Uint32 numSubresources, const D3D12_SUBRESOURCE_DATA subresources[])
     {
         Uint64 reqSize = GetRequiredIntermediateSize(resource.GetResource(), 0, numSubresources);
 

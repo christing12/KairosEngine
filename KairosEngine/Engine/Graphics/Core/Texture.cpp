@@ -2,11 +2,9 @@
 #include "Texture.h"
 #include "RenderDevice.h"
 #include "CommandContext.h"
+#include "Image.h"
 
-#define STB_IMAGE_IMPLEMENTATION 
-#include "stb_image.h"
-
-#include <assimp/Importer.hpp>
+#include <TextureAsset.h>
 
 namespace Kairos {
 	Texture::Texture(RenderDevice* pDevice, D3D12_RESOURCE_DESC desc, D3D12_RESOURCE_STATES initState, const D3D12_CLEAR_VALUE* clearVal)
@@ -33,16 +31,14 @@ namespace Kairos {
 	{
 		CheckFeatureSupport();
 		InitTextureViews();
-		//m_Device->GetD3DDevice()->CreateRenderTargetView(m_Resource.Get(), nullptr, m_RTV.GetDescriptorHandle());
 	}
 
-	Texture::Texture(RenderDevice* pDevice, const char* filename, DXGI_FORMAT format, int numChannels)
+
+	Texture::Texture(RenderDevice* pDevice, Ref<Image> img, DXGI_FORMAT format, Uint32 levels)
 		: Resource(pDevice)
+		, m_Height(img->Height())
+		, m_Width(img->Width())
 	{
-		stbi_set_flip_vertically_on_load(true);
-
-		unsigned char* img = stbi_load(filename, &m_Width, &m_Height, &m_Channels, numChannels);
-
 		D3D12_HEAP_PROPERTIES heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		m_Desc = CD3DX12_RESOURCE_DESC::Tex2D(format, m_Width, m_Height);
 		m_Desc.MipLevels = 1;
@@ -58,21 +54,64 @@ namespace Kairos {
 		);
 
 		KRS_CORE_ASSERT(SUCCEEDED(hr) && m_Resource != nullptr, "Issue with creating a resource");
-
-		D3D12_SUBRESOURCE_DATA subresource = {};
-		subresource.pData = img;
-		subresource.RowPitch = m_Width * 4;
-		subresource.SlicePitch = m_Height;
-
-		D3D12_SUBRESOURCE_DATA subresources = {
-			subresource
-		};
-
 		CheckFeatureSupport();
 
-		CommandContext::InitTexture(m_Device, *this, 1, &subresources);
+		const D3D12_SUBRESOURCE_DATA data[] = {
+			{ img->Pixels<void>(), img->Pitch() }
+		};
+		CommandContext::InitTexture(m_Device, *this, 1, data);
+
 		InitTextureViews();
-		stbi_image_free(img);
+	}
+
+	Texture::Texture(RenderDevice* pDevice)
+		: Resource(pDevice)
+	{
+	}
+
+	Ref<Texture> Texture::LoadFromAsset(RenderDevice* pDevice, const char* filename, DXGI_FORMAT format)
+	{
+		assets::AssetFile file;
+		bool loaded = assets::load_binaryfile(filename, file);
+		if (!loaded) {
+			KRS_CORE_ERROR("error when loading mesh");
+			return false;
+		}
+		Ref<Texture> texture = CreateRef<Texture>(pDevice);
+		assets::TextureInfo textureInfo = assets::read_texture_info(&file);
+		texture->m_Width = textureInfo.pixelSize[0];
+		texture->m_Height = textureInfo.pixelSize[1];
+
+		D3D12_HEAP_PROPERTIES heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+		texture->m_Desc = CD3DX12_RESOURCE_DESC::Tex2D(format, texture->m_Width, texture->m_Height);
+		texture->m_Desc.MipLevels = 1;
+
+		auto hr = pDevice->GetD3DDevice()->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&texture->m_Desc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&texture->m_Resource)
+		);
+
+		KRS_CORE_ASSERT(SUCCEEDED(hr) && texture->m_Resource != nullptr, "Issue with creating a resource");
+		texture->CheckFeatureSupport();
+
+		char* data = new char[textureInfo.textureSize];
+		assets::unpack_texture(&textureInfo, file.binaryBlob.data(), file.binaryBlob.size(), data);
+
+		
+		const D3D12_SUBRESOURCE_DATA subresourceData[] = {
+			{ reinterpret_cast<void*>(data), textureInfo.textureSize / texture->m_Height }
+		};
+
+		CommandContext::InitTexture(pDevice, *texture.get(), 1, subresourceData);
+
+		texture->InitTextureViews();
+
+		delete[] data;
+		return texture;
 	}
 
 	void Texture::InitTextureViews()
@@ -94,6 +133,7 @@ namespace Kairos {
 			dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 			dsv.Texture2D.MipSlice = 0;
 			dsv.Flags = D3D12_DSV_FLAG_NONE;
+			
 
 			m_Device->GetD3DDevice()->CreateDepthStencilView(m_Resource.Get(), &dsv, m_DSV.GetDescriptorHandle());
 		}

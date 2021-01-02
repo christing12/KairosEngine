@@ -17,6 +17,7 @@ public:
 
 	D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t offset, Uint32 size, Uint32 stride) const;
 	D3D12_INDEX_BUFFER_VIEW IndexBufferView(size_t offset, Uint32 size, bool b32bit) const;
+	D3D12_CPU_DESCRIPTOR_HANDLE CreateConstanBufferView(Uint32 offset, Uint32 size) const;
 protected:
 	Uint32 m_BufferSize = 0;
 	CPVoid m_Data = nullptr;

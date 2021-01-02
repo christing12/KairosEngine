@@ -68,6 +68,22 @@ namespace Kairos {
         return IBView;
     }
 
+    D3D12_CPU_DESCRIPTOR_HANDLE Buffer::CreateConstanBufferView(Uint32 offset, Uint32 size) const
+    {
+        KRS_CORE_INFO(offset + size);
+        KRS_CORE_ASSERT(offset + size <= m_BufferSize, "TOO BIG VIEW");
+        size = Math::AlignUp(size, 256);
+
+        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvdesc;
+        cbvdesc.BufferLocation = m_GPUAddress + (size_t)offset;
+        cbvdesc.SizeInBytes = size;
+
+        D3D12_CPU_DESCRIPTOR_HANDLE cbv = m_Device->AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1).GetDescriptorHandle();
+
+        m_Device->GetD3DDevice()->CreateConstantBufferView(&cbvdesc, cbv);
+        return cbv;
+    }
+
     DynamicUploadBuffer::DynamicUploadBuffer(RenderDevice* pDevice, Uint32 numElements, Uint32 stride, const std::wstring& debugName)
         : Resource(pDevice)
         , m_NumElements(numElements)

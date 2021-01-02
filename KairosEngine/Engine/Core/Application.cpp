@@ -3,7 +3,7 @@
 #include "MouseCodes.h"
 #include "Graphics/Core/Renderer.h"
 #include "Graphics/Core/RenderDevice.h"
-
+#include "Filesystem.h"
 #include "Input.h"
 
 namespace Kairos {
@@ -68,8 +68,15 @@ namespace Kairos {
 
 	bool Application::OnKeyPressed(KeyPressedEvent& e)
 	{
-		if (e.GetKeyCode() == Key::Escape) {
-			mIsRunning = false;
+		switch (e.GetKeyCode())
+		{
+		case Key::Escape: mIsRunning = false; break;
+		case Key::P: {
+			//KRS_CORE_INFO(Filesystem::GetExecutablePath());
+			//KRS_CORE_INFO(Filesystem::GetWorkingDirectory());
+			KRS_CORE_INFO(Filesystem::GetRelativePath("C:/Users/Chris Ting/Desktop/Link/"));
+			//Filesystem::OpenDirectoryWindow("C:/Users/Chris Ting/Desktop");
+		}
 		}
 		return false;
 	}

@@ -26,7 +26,8 @@ namespace Kairos {
 		void FlushResourceBarriers();
 
 		static void InitBuffer(class RenderDevice* pDevice, Resource& resource, CPVoid data, size_t numBytes, size_t offset = 0);
-		static void InitTexture(RenderDevice* pDevice, Resource& resource, Uint32 numSubResources, D3D12_SUBRESOURCE_DATA subresources[]);
+		void WriteBuffer(Resource& dest, CPVoid data, size_t sizeInBytes, size_t destOffset = 0);
+		static void InitTexture(RenderDevice* pDevice, Resource& resource, Uint32 numSubResources, const D3D12_SUBRESOURCE_DATA subresources[]);
 
 		void Reset(Ref<class CommandQueue> commandQueue);
 		Uint64 Submit(bool waitForCompletion);

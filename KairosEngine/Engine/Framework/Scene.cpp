@@ -3,7 +3,7 @@
 #include "Util/JSONUtil.h"
 
 #include <DirectXMath.h>
-#include "nlohmann/json.hpp"
+#include "nlohmann_json/json.hpp"
 #include <string>
 #include <fstream>
 
@@ -34,6 +34,10 @@ namespace Kairos {
 			float farPlane = cameraData["farPlane"];
 
 			mCamera = Camera(DirectX::XMMatrixPerspectiveFovLH(45.0f * (3.14f / 180.0f), width / height, 0.1f, 1000.0f), translation);
+		}
+
+		{
+
 		}
 	}
 

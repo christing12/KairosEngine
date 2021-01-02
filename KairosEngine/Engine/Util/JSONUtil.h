@@ -1,7 +1,7 @@
 #pragma once
 
-#include <DirectXTK12/Inc/SimpleMath.h>
-#include "nlohmann/json.hpp"
+#include <DirectXTK/SimpleMath.h>
+#include "nlohmann_json/json.hpp"
 
 namespace Util {
 	DirectX::SimpleMath::Vector3 Vector3FromJSON(nlohmann::json jsonObj) {

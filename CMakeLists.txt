@@ -23,9 +23,13 @@ set(KRS_VERSION ${KRS_VERSION_MAJOR}.${KRS_VERSION_MINOR})
 
 project(${PROJECT_NAME} VERSION ${KRS_VERSION} LANGUAGES CXX)
 
+add_subdirectory(external)
+add_subdirectory(AssetLib)
+add_subdirectory(AssetBaker)
+
 add_subdirectory(KairosEngine)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/Applications)
+add_subdirectory(Applications)
 
 set_directory_properties(PROPERTIES
     VS_STARTUP_PROJECT MeshRenderer

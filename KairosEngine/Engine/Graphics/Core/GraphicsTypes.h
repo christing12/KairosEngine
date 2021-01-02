@@ -1,6 +1,6 @@
 #pragma once
 
-#include <DirectXTK12/Inc/SimpleMath.h>
+#include <DirectXTK/SimpleMath.h>
 
 using namespace DirectX::SimpleMath;
 
@@ -32,4 +32,10 @@ enum BUFFER_TYPE : uint8_t {
 enum LINEAR_ALLOCATOR_TYPE : uint8_t {
 	GPU_EXCLUSIVE = 1,
 	CPU_WRITABLE = GPU_EXCLUSIVE << 1
+};
+
+enum COMMAND_TYPE : uint8_t {
+	COMMAND_TYPE_DIRECT = 0,
+	COMMAND_TYPE_COMPUTE = 1,
+	COMMAND_TYPE_COPY = 2
 };

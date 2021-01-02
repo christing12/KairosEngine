@@ -46,9 +46,7 @@ target_include_directories(${APP_NAME}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(${APP_NAME}
-    PUBLIC KairosEngine
-)
+target_link_libraries(${APP_NAME} PUBLIC KairosEngine DirectXTK12)
 
 add_compile_options(-D_UNICODE)
 add_compile_options(-DUNICODE)
@@ -65,11 +63,12 @@ set_source_files_properties(apppch.cpp
         COMPILE_FLAGS /Yc"apppch.h"
 )
 
+#[[
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib/static
-)
+)]]
 
 #[[
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

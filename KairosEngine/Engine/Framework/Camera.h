@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <DirectXTK12/Inc/SimpleMath.h>
+#include <DirectXTK/SimpleMath.h>
 
 namespace Kairos {
 	using namespace DirectX::SimpleMath;
@@ -17,6 +17,7 @@ namespace Kairos {
 		const Matrix& GetViewMat() const { return mViewMat; }
 		Matrix GetViewProjMat() const { return mViewMat * mProjectionMat; }
 		const Matrix& GetProjMat() const { return mProjectionMat; }
+		const Matrix& GetViewRotMat() const { return mViewRotMat; }
 		void SetProjMat(const Matrix& mat) { mProjectionMat = mat; }
 		void SetRotation(const Vector3& vec) { mRotation = vec; }
 
@@ -26,14 +27,16 @@ namespace Kairos {
 		Vector3 GetRightDir() const;
 		Vector3 GetForward() const;
 
+
 	protected:
-		Vector3 CalculatePosition();
 		void UpdateCameraView();
 
 
 	protected:
+		Vector3 CalculatePosition();
 		Matrix mProjectionMat = Matrix::Identity;
 		Matrix mViewMat = Matrix::Identity;
+		Matrix mViewRotMat = Matrix::Identity;
 		Vector3 mPosition = Vector3::Zero;
 		Vector3 mRotation = Vector3(0.0f, 3.14159, 0.0f);
 

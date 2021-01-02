@@ -5,7 +5,7 @@
 #include "Events/MouseEvent.h"
 #include "Events/WindowEvent.h"
 
-#include <DirectXTK12/Inc/SimpleMath.h>
+#include <DirectXTK/SimpleMath.h>
 
 #include <map>
 

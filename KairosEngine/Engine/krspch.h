@@ -11,7 +11,7 @@
 #include <d3dcompiler.h>
 #include <dxgidebug.h>
 #include "d3dx12.h"
-#include <DirectXTK12/Inc/SimpleMath.h>
+#include <DirectXTK/SimpleMath.h>
 
 #pragma comment (lib, "d3d12.lib") 
 #pragma comment(lib, "dxgi.lib")

@@ -1,24 +1,21 @@
 #include "Constants.hlsl"
 
 
-struct VIn
+struct VertexInput
 {
     float3 position : POSITION;
-    float2 texCoord : TEXCOORD;
 };
 
-struct VOut
+struct PixelInput
 {
     float4 position : SV_POSITION;
-    float2 texCoord : TEXCOORD;
 };
 
 
 VOut main(VIn vIn)
 {
     VOut output;
-    output.position = mul(ModelViewProjectionCB.MVP, float4(vIn.position, 1.0f));
-    output.texCoord = vIn.texCoord;
+    output.position, = mul(float4(vIn.position, 1.0f), ModelCB.modelMat * ModelCB.viewProjMat);
     return output;
 }
 

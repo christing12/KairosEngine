@@ -19,6 +19,7 @@ namespace Kairos {
 	{
 		return m_IndexBuffer->IndexBufferView(0, m_IndexBuffer->GetBufferSize(), false);
 	}
+
 	Ref<Mesh> Mesh::CreateFromFile(RenderDevice* pDevice, const char* file)
 	{
 

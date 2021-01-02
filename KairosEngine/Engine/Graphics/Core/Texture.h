@@ -16,7 +16,10 @@ public:
 	Texture(RenderDevice* pDevice, D3D12_RESOURCE_DESC desc, D3D12_RESOURCE_STATES initState, const D3D12_CLEAR_VALUE* clearVal = nullptr);
 	Texture(RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3D12Resource> initResource,
 		D3D12_RESOURCE_STATES initState);
-	Texture(RenderDevice* pDevice, const char* filename, DXGI_FORMAT = DXGI_FORMAT_R8G8B8A8_UNORM, int numChannels = 0);
+	Texture(RenderDevice* pDevice, Ref<class Image> img, DXGI_FORMAT format, Uint32 levels);
+	Texture(RenderDevice* pDevice);
+
+	static Ref<Texture> LoadFromAsset(RenderDevice* pDevice, const char* filename, DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	Uint32 Width() const { return m_Width; }
 	Uint32 Height() const { return m_Height; }
@@ -39,6 +42,10 @@ protected:
 	DescriptorAllocation m_DSV;
 	DescriptorAllocation m_SRV;
 	DescriptorAllocation m_UAV;
+
+	bool isCubeMap = false;
 };
+
+
 
 KRS_END_NAMESPACE

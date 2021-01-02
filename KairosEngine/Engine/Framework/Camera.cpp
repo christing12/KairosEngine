@@ -22,10 +22,10 @@ namespace Kairos {
         mPosition = CalculatePosition();
 
         Quaternion orientation = GetOrientation();
-        mViewMat = Matrix::CreateFromQuaternion(orientation)
-            * Matrix::CreateTranslation(mPosition);
-        mViewMat = mViewMat.Invert();
+        mViewRotMat = Matrix::CreateFromQuaternion(orientation);
 
+        mViewMat = mViewRotMat * Matrix::CreateTranslation(mPosition);
+        mViewMat = mViewMat.Invert();
     }
 
 
