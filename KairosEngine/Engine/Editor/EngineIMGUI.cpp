@@ -4,8 +4,8 @@
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
 
-#include "Graphics/Core/RenderDevice.h"
-#include "Graphics/Core/CommandContext.h"
+#include "RenderBackend/RenderDevice.h"
+#include "RenderBackend/CommandContext.h"
 
 namespace Kairos {
 	EngineIMGUI::EngineIMGUI(RenderDevice* pDevice, HWND hWnd)

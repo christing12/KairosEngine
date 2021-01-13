@@ -12,7 +12,7 @@ public:
 	Scene() = default;
 
 	void Serialize(std::string filePath);
-	void Deserialize(std::string filePath, Uint32 width = 1280, Uint32 height = 1024);
+	void Deserialize(std::string filePath, Uint32 width = 1024, Uint32 height = 1024);
 
 private:
 	Camera mCamera;

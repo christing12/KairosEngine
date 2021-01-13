@@ -36,7 +36,7 @@ set_target_properties(${APP_NAME}
     PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
-        VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/output/bin
+        VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         LINK_FLAGS /SUBSYSTEM:CONSOLE
 )
 
@@ -62,6 +62,8 @@ set_source_files_properties(apppch.cpp
     PROPERTIES
         COMPILE_FLAGS /Yc"apppch.h"
 )
+
+
 
 #[[
 install(TARGETS ${PROJECT_NAME}

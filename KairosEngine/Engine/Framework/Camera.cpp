@@ -26,6 +26,8 @@ namespace Kairos {
 
         mViewMat = mViewRotMat * Matrix::CreateTranslation(mPosition);
         mViewMat = mViewMat.Invert();
+
+       // mViewMat = DirectX::XMMatrixLookAtLH(mPosition, Vector3::Zero, Vector3::Up);
     }
 
 

@@ -8,8 +8,26 @@
 
 // macro for creating enums (in case we want to change in the future) 
 #define KRS_TYPED_ENUM(EnumName, EnumType) enum EnumName : EnumType
+#define KRS_TYPED_CLASS_ENUM(EnumName, EnumType) enum class EnumName : EnumType
 #define KRS_UNSCOPED_ENUM(EnumName) enum : EnumName
 #define KRS_DERIVE(TypeName) : public TypeName
+
+
+#define SAFE_DELETE(p) if ((p)) { delete(p); (p) = nullptr; }
+
+#define align_to(_alignment, _val) (((_val + _alignment - 1) / _alignment) * _alignment)
+
+#define ENUM_FLAG_OPERATORS(e_) inline e_ operator& (e_ a, e_ b){return static_cast<e_>(static_cast<int>(a)& static_cast<int>(b));}  \
+    inline e_ operator| (e_ a, e_ b){return static_cast<e_>(static_cast<int>(a)| static_cast<int>(b));} \
+    inline e_& operator|= (e_& a, e_ b){a = a | b; return a;};  \
+    inline e_& operator&= (e_& a, e_ b) { a = a & b; return a; };   \
+    inline e_  operator~ (e_ a) { return static_cast<e_>(~static_cast<int>(a));}   \
+    inline bool is_any_set(e_ val, e_ flag) { return (val & flag) != (e_)0;} \
+    inline bool is_all_set(e_ val, e_ flag) { return (val & flag) == flag;}   
+
+
+#define UNUSED(X) (void*)&X;
+
 
 #define KRS_BEGIN_NAMESPACE(Name) \
 	namespace Name				  \
@@ -21,23 +39,24 @@
 #define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
 
 // Macros for common sizes
-#define _KB(x) (x * 1024)
-#define _MB(x) (x * 1024 * 1024)
+#define KB(x) (x * 1024)
+#define MB(x) (x * 1024 * 1024)
+#define GB(x) (x * 1024 * 1024 * 1024)
 
-#define _64KB _KB(64)
-#define _1MB _MB(1)
-#define _2MB _MB(2)
-#define _4MB _MB(4)
-#define _8MB _MB(8)
-#define _16MB _MB(16)
-#define _32MB _MB(32)
-#define _64MB _MB(64)
-#define _128MB _MB(128)
-#define _256MB _MB(256)
+#define _64KB	KB(64)
+#define _1MB	MB(1)
+#define _2MB	MB(2)
+#define _4MB	MB(4)
+#define _8MB	MB(8)
+#define _16MB	MB(16)
+#define _32MB	MB(32)
+#define _64MB	MB(64)
+#define _128MB	MB(128)
+#define _256MB	MB(256)
 
 
 const static bool FULL_SCREEN = false;
-const static unsigned int WINDOW_WIDTH = 1280;
+const static unsigned int WINDOW_WIDTH = 1024;
 const static unsigned int WINDOW_HEIGHT = 1024;
 
 // typedefs for smart pointers

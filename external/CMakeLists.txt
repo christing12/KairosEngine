@@ -1,5 +1,7 @@
 include(ExternalProject)
 
+project(external)
+
 add_library(stb_image INTERFACE) # header only library
 add_library(json INTERFACE) #json header only library
 add_library(lz4 STATIC)
@@ -29,6 +31,9 @@ target_sources(imgui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_internal.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_stdlib.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_stdlib.cpp
+
 
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_dx12.h
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_win32.h
@@ -57,6 +62,14 @@ set(assimp_lib ${CMAKE_CURRENT_SOURCE_DIR}/assimp/lib/Debug/assimp-vc142-mtd.lib
 target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/assimp/include)
 target_link_libraries(assimp INTERFACE ${assimp_lib})
 
+
+# ------------------------ PIX (GRAPHICS DEBUGGING) ---------------
+add_library(WinPixEventRuntime INTERFACE)
+
+set(winpix_lib ${CMAKE_CURRENT_SOURCE_DIR}/WinPixEventRuntime/lib/WinPixEventRuntime.lib)
+
+target_include_directories(WinPixEventRuntime INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/WinPixEventRuntime/include)
+target_link_libraries(WinPixEventRuntime INTERFACE ${winpix_lib})
 
 # ---------------- DIRECTXTK STUFF --------------- 
 

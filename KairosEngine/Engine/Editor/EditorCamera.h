@@ -24,7 +24,7 @@ namespace Kairos {
 
 	private:
 		Vector2 mInitialMousePos;
-		Uint32 width = 1280.0f, height = 1024.0f;
+		Uint32 width = 1024.f, height = 1024.0f;
 
 	};
 }

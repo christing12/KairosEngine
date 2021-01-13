@@ -1,6 +1,9 @@
 #include "krspch.h"
 #include "EditorCamera.h"
-#include "Core/Input.h"
+#include "Systems/InputSystem.h"
+#include "Systems/Interface/IEngine.h"
+
+extern Kairos::IEngine* g_Engine;
 
 namespace Kairos {
     EditorCamera::EditorCamera(const Matrix& projMat, Vector3 startPos)
@@ -15,17 +18,17 @@ namespace Kairos {
     }
     void EditorCamera::Update(float deltaTime)
     {
-        if (Input::IsKeyDown(Key::LeftAlt)) {
-            auto [x, y] = Input::GetMousePosition();
+        if (g_Engine->GetInputSystem()->IsKeyDown(Key::LeftAlt)) {
+            auto [x, y] = g_Engine->GetInputSystem()->GetMousePosition();
             Vector2 mouse(x, y);
             Vector2 delta = Vector2(mouse - mInitialMousePos) * 0.003f;
             mInitialMousePos = mouse;
 
-            if (Input::IsMouseButtonDown(Mouse::MiddleButton))
+            if (g_Engine->GetInputSystem()->IsMouseButtonDown(Mouse::MiddleButton))
                 MousePan(delta);
-            else if (Input::IsMouseButtonDown(Mouse::LeftButton))
+            else if (g_Engine->GetInputSystem()->IsMouseButtonDown(Mouse::LeftButton))
                 MouseRotate(delta);
-            else if (Input::IsMouseButtonDown(Mouse::RightButton))
+            else if (g_Engine->GetInputSystem()->IsMouseButtonDown(Mouse::RightButton))
                 MouseZoom(delta.y);
         }
         UpdateCameraView();
@@ -47,7 +50,7 @@ namespace Kairos {
     void EditorCamera::MousePan(const Vector2& delta)
     {
         auto [xSpeed, ySpeed] = PanSpeed();
-        mTarget += GetRightDir() * delta.x * xSpeed * mDistFromTarget;
+        mTarget += GetRightDir() * delta.x * -xSpeed * mDistFromTarget;
         mTarget += GetUpDir() * delta.y * ySpeed * mDistFromTarget;
     }
 
@@ -81,7 +84,7 @@ namespace Kairos {
 
     float EditorCamera::RotationSpeed() const
     {
-        return 0.5f;
+        return 0.9f;
         //return 0.0f;
     }
     float EditorCamera::ZoomSpeed() const

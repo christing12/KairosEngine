@@ -6,8 +6,6 @@ project(${LIB_NAME} LANGUAGES CXX)
 
 set(KRS_CORE_INC
     Engine/Core/Application.h
-    Engine/Core/Input.h
-    Engine/Core/Window.h
     Engine/Core/BaseTypes.h
     Engine/Core/EngineCore.h
     Engine/Core/EngineMath.h
@@ -15,15 +13,16 @@ set(KRS_CORE_INC
     Engine/Core/MouseCodes.h
     Engine/Core/Log.h
     Engine/Core/Filesystem.h
+    Engine/Core/ApplicationEntry.h
+    Engine/Core/ClassTemplates.h
 
 )
 
 set(KRS_CORE_SRC
     Engine/Core/Log.cpp
-    Engine/Core/Window.cpp
     Engine/Core/Application.cpp
-    Engine/Core/Input.cpp
     Engine/Core/Filesystem.cpp
+    Engine/Core/ApplicationEntry.cpp
 )
 
 source_group("Core" FILES ${KRS_CORE_INC} ${KRS_CORE_SRC})
@@ -39,59 +38,63 @@ set(KRS_EVENT_INC
 source_group("Core\\Events" FILES ${KRS_EVENT_INC})
 
 
+set(KRS_COMPONENT_INC
+    MeshDataComponent.h
+    TextureDataComponent.h
+)
+list(TRANSFORM KRS_COMPONENT_INC PREPEND "Engine/Component/")
+source_group("Component" FILES ${KRS_COMPONENT_INC})
 
 
 
 set(KRS_GRAPHICS_CORE_INC
     Buffer.h
+    BufferManager.h
     CommandAllocatorPool.h
     CommandContext.h
     CommandQueue.h
     DescriptorHeap.h
     DynamicDescriptorHeap.h
-    EngineFactory.h
     Fence.h
     GraphicsTypes.h
-    LinearAllocator.h
+    UploadResourceAllocator.h
     Mesh.h
-    PipelineStateObject.h
+    PipelineState.h
     RenderDevice.h
-    Renderer.h
     Resource.h
     RootSignature.h
     Shader.h
     SwapChain.h
     Texture.h
-    Image.h
-    Cubemap.h
+    DX12RenderBackend.h
+    PipelineStateManager.h
+    RenderScene.h
 )
 
 set(KRS_GRAPHICS_CORE_SRC
-    Buffer.cpp
+    BufferManager.cpp
     CommandAllocatorPool.cpp
     CommandContext.cpp
     CommandQueue.cpp
     DescriptorHeap.cpp
     DynamicDescriptorHeap.cpp
-    EngineFactory.cpp
     Fence.cpp
-    LinearAllocator.cpp
+    UploadResourceAllocator.cpp
     Mesh.cpp
-    PipelineStateObject.cpp
+    PipelineState.cpp
     RenderDevice.cpp
-    Renderer.cpp
-    Resource.cpp
     RootSignature.cpp
     Shader.cpp
     SwapChain.cpp
     Texture.cpp
-    Image.cpp
-    Cubemap.cpp
+    DX12RenderBackend.cpp
+    PipelineStateManager.cpp
+    RenderScene.cpp
 )
 
-list(TRANSFORM KRS_GRAPHICS_CORE_INC PREPEND "Engine/Graphics/Core/")
-list(TRANSFORM KRS_GRAPHICS_CORE_SRC PREPEND "Engine/Graphics/Core/")
-source_group("Graphics\\Core" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE_SRC})
+list(TRANSFORM KRS_GRAPHICS_CORE_INC PREPEND "Engine/RenderBackend/")
+list(TRANSFORM KRS_GRAPHICS_CORE_SRC PREPEND "Engine/RenderBackend/")
+source_group("Render Backend" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE_SRC})
 
 
 
@@ -121,11 +124,17 @@ set(KRS_CORE_SHADERS
     ShaderMath.hlsl
     phong.hlsl
     white.hlsl
+    GenerateMips.hlsl
+    irmap.hlsl
+    spbrdf.hlsl
+    spmap.hlsl
+    textureviewer.hlsl
+    equirect2cube.hlsl
 )
 
 
-list(TRANSFORM KRS_CORE_SHADERS PREPEND "Engine/Graphics/Shaders/")
-source_group("Graphics\\Shaders" FILES ${KRS_CORE_SHADERS})
+list(TRANSFORM KRS_CORE_SHADERS PREPEND "../Data/shaders/")
+source_group("Shaders" FILES ${KRS_CORE_SHADERS})
 set_property(SOURCE ${KRS_CORE_SHADERS} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
 
@@ -172,6 +181,40 @@ source_group("Util" FILES ${KRS_UTIL_INC} ${KRS_UTIL_SRC})
 
 
 
+set(KRS_SYSTEM_INC
+    Engine.h
+    WinWindowSystem.h
+    D3DWindowSurface.h
+    InputSystem.h
+    GUISystem.h
+    CVarSystem.h
+)
+set(KRS_SYSTEM_SRC
+    Engine.cpp
+    WinWindowSystem.cpp
+    D3DWindowSurface.cpp
+    InputSystem.cpp
+    GUISystem.cpp
+    CVarSystem.cpp
+)
+list(TRANSFORM KRS_SYSTEM_INC PREPEND "Engine/Systems/")
+list(TRANSFORM KRS_SYSTEM_SRC PREPEND "Engine/Systems/")
+source_group("Systems" FILES ${KRS_SYSTEM_INC} ${KRS_SYSTEM_SRC})
+
+set(KRS_SYSTEM_INTERFACE
+    IEngine.h
+    IRenderBackend.h
+    ISystem.h
+    IEventSystem.h
+    IWindowSurface.h
+    IWindowSystem.h
+    IInputSystem.h
+    IGUISystem.h
+    ICVarSystem.h
+)
+list(TRANSFORM KRS_SYSTEM_INTERFACE PREPEND "Engine/Systems/Interface/")
+source_group("Systems\\Interface" FILES ${KRS_SYSTEM_INTERFACE})
+
 set(KRS_ALL_INC
     ${KRS_GENERAL_INC}
     ${KRS_CORE_INC}
@@ -181,6 +224,9 @@ set(KRS_ALL_INC
     ${KRS_EDITOR_INC}
     ${KRS_FRAMEWORK_INC}
     ${KRS_UTIL_INC}
+    ${KRS_SYSTEM_INC}
+    ${KRS_SYSTEM_INTERFACE}
+    ${KRS_COMPONENT_INC}
     
 )
 
@@ -191,6 +237,7 @@ set(KRS_ALL_SRC
     ${KRS_EDITOR_SRC}
     ${KRS_FRAMEWORK_SRC}
     ${KRS_UTIL_SRC}
+    ${KRS_SYSTEM_SRC}
 )
 
 add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
@@ -211,6 +258,7 @@ target_link_libraries(${LIB_NAME} PUBLIC DirectXTK12 assetlib imgui stb_image js
     dxgi.lib
     d3dcompiler.lib
     dxguid.lib
+    WinPixEventRuntime
 )
 
 
@@ -223,7 +271,7 @@ target_include_directories(${LIB_NAME}
 
 # ---------------- PRECOMPILED HEADERS -------------- #
 
-set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC} ${KRS_SYSTEM_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )

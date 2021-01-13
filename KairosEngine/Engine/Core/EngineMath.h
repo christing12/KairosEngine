@@ -66,6 +66,17 @@ namespace Math
         return fabsf(a - b) <= epsilon * Max(Max(1.0f, fabsf(a)), fabsf(b));
     }
 
+
+
+    template<typename T>
+    constexpr T numMipmapLevels(T width, T height) {
+        T levels = 1;
+        while ((width | height) >> levels) {
+            ++levels;
+        }
+        return levels;
+    }
+
     /***************************************************************************
     * These functions were taken from the MiniEngine.
     * Source code available here:

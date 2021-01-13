@@ -6,21 +6,20 @@ project(assetlib LANGUAGES CXX)
 set(HEADERS
     AssetLoader.h
     TextureAsset.h
+    MeshAsset.h
 )
 source_group("inc" FILES ${HEADERS})
 
 set(SRC
     AssetLoader.cpp
     TextureAsset.cpp
+    MeshAsset.cpp
 
 )
 source_group("src" FILES ${SRC})
 
 
 add_library(assetlib STATIC ${HEADERS} ${SRC})
-
-
-message(HWEFJIOWF)
 
 target_include_directories(assetlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
