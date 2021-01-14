@@ -4,18 +4,22 @@
 #include <Core/BaseTypes.h>
 #include <Core/ClassTemplates.h>
 
+#include "RootSignature.h"
+
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RootSignature;
 class PipelineState;
 class ShaderManager;
+class RootSignature;
 
 // temporary object to test pipeline configuration
 struct GraphicsPipelineProxy {
 	std::string VSFile;
 	std::string PSFile;
-	std::optional<std::string> GSFile;
+	std::string RootSigName;
+	std::string GSFile;
 	D3D12_RASTERIZER_DESC RasterizerState;
 	D3D12_DEPTH_STENCIL_DESC DepthStencilState;
 	D3D12_PRIMITIVE_TOPOLOGY_TYPE Topology;
@@ -27,9 +31,8 @@ struct GraphicsPipelineProxy {
 
 struct ComputePiplineProxy {
 	std::string CSFile;
-	std::optional<std::string> RootSignatureName;
+	std::string RootSignatureName;
 };
-
 
 
 
@@ -43,42 +46,48 @@ public:
 
 	PipelineStateManager(
 		class RenderDevice* pDevice,
-		Ref<class ShaderManager> shaderManager
+		class ShaderManager* shaderManager
 	);
 
 	using PSOName = std::string;
 	using RSName = std::string;
 	using GraphicsPipelineFn = std::function<void(GraphicsPipelineProxy&)>;
 	using ComputePipelineFn = std::function<void(ComputePiplineProxy&)>;
-	using PSOHandle = std::optional<RenderHandle>;
-	using RSHandle = std::optional<RenderHandle>;
+	using RootSignatureFn = std::function<void(class RootSignature&)>;
 	using PipelineNameCache = std::unordered_map<std::string, RenderHandle>;
 	using PipelineCache = std::vector<PipelineState>;
 
-	void CreateGraphicsPipelineState(PSOName name, const GraphicsPipelineFn& pipelineFn);
-	void CreateComputePipelineState(PSOName name, const ComputePipelineFn& computeFn);
+	RenderHandle CreateRootSignature(const std::string& name, const RootSignatureFn& sigFn);
+	RenderHandle CreateGraphicsPipelineState(PSOName name, const GraphicsPipelineFn& pipelineFn);
+	RenderHandle CreateComputePipelineState(PSOName name, const ComputePipelineFn& computeFn);
 	//void CreateRootSignature(PSOName name, )
 
+
 	// checks for name to see if its already been registered
-	RSHandle GetRootSignature(RSName name);
-	// checks for name to see if its already been registered
-	PSOHandle GetPipelineState(PSOName name);
+	RenderHandle GetPipelineState(PSOName name);
+
 
 
 private:
 	RenderDevice* m_Device;
-	Ref<class ShaderManager> m_ShaderManager;
+	ShaderManager* m_ShaderManager;
 
 
-
+	std::unordered_map<std::string, RenderHandle> m_RootSigNameCache;
 	PipelineNameCache m_PipelineNameCache;
 
 	PipelineCache m_RegisteredPSO;
-	std::vector<PipelineState> m_RegisteredRS;
+	std::vector<RootSignature> m_RegisteredRS;
 
 	std::string defaultVSEntryPoint = "main_vs";
 	std::string defaultPSEntryPoint = "main_ps";
 	std::string defaultCSentryPoint = "main";
+private:
+	Uint64 RSIndexFromHandle(const RenderHandle& handle) const;
+
+	void AddGlobalRootSigParam(class RootSignature& signature);
+	const RootSignature* GetRootSignature(const std::string& name);
+
 };
 
 

@@ -8,6 +8,7 @@
 #include "Texture.h"
 #include "PipelineStateManager.h"
 #include "Resource.h"
+#include "BufferManager.h"
 
 
 #include <pix3.h>
@@ -30,7 +31,7 @@ namespace Kairos {
 
     void GraphicsContext::SetRootSignature(const RootSignature& rootSignature)
     {
-        m_CurrRootSignature = rootSignature.GetD3DRootSignature();
+        m_CurrRootSignature = rootSignature.D3DRootSignature();
         m_dCommandList->SetGraphicsRootSignature(m_CurrRootSignature);
         m_ViewDescriptorHeap.ParseGraphicsRootSignature(rootSignature);
         m_SamplerDescriptorHeap.ParseGraphicsRootSignature(rootSignature);
@@ -151,9 +152,6 @@ namespace Kairos {
         }
     }
 
-    void CommandContext::CopyResource(ID3D12Resource* src, ID3D12Resource* dest)
-    {
-    }
 
     void CommandContext::TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState, bool flushImmediate)
     {
@@ -190,63 +188,15 @@ namespace Kairos {
             buffer.Offset + destOffset, dynAlloc.Buffer.NativeResource.Get(), 0, sizeInBytes);
     }
 
-    //void CommandContext::InitBuffer(RenderDevice* pDevice, Resource& resource, CPVoid data, size_t numBytes, size_t offset)
-    //{
-    //    CommandContext& context = pDevice->AllocateCommandContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    //    LinearAllocator::Allocation dynAlloc = context.RequestUploadMemory(numBytes);
+    void CommandContext::InitTexture(Texture& resource, Uint32 numSubresources, const D3D12_SUBRESOURCE_DATA subresources[])
+    {
+        Uint64 reqSize = GetRequiredIntermediateSize(resource.NativeResource.Get(), 0, numSubresources);
 
-    //    memcpy(dynAlloc.CPU, data, numBytes);
-    //    if (resource.GetCurrState() != D3D12_RESOURCE_STATE_COPY_DEST)
-    //        context.TransitionResource(resource, D3D12_RESOURCE_STATE_COPY_DEST, true);
+        ResourceAllocation dynAlloc = RequestUploadMemory(reqSize);
 
-    //    // copies from upload buffer (allocation) to dst resource GPU only (resource)
-    //    context.m_dCommandList->CopyBufferRegion(resource.GetResource(), offset,
-    //        dynAlloc.UploadResource.Get(), 0, numBytes);
-    //    context.TransitionResource(resource, D3D12_RESOURCE_STATE_GENERIC_READ, true);
-    //    context.Submit(true);
-    //}
-
-    //void CommandContext::InitTexture(RenderDevice* pDevice, Resource& resource, Uint32 numSubresources, const D3D12_SUBRESOURCE_DATA subresources[])
-    //{
-    //    Uint64 reqSize = GetRequiredIntermediateSize(resource.GetResource(), 0, numSubresources);
-
-    //    CommandContext& context = pDevice->AllocateCommandContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    //    LinearAllocator::Allocation dynAlloc = context.RequestUploadMemory(reqSize);
-
-    //    UpdateSubresources(context.m_dCommandList.Get(), resource.GetResource(), dynAlloc.UploadResource.Get(),
-    //        0, 0, numSubresources, subresources);
-
-    //    context.TransitionResource(resource, D3D12_RESOURCE_STATE_GENERIC_READ);
-    //    context.Submit(true);
-    //}
-
-    //// does not worry about before and after states, someone else's job
-    //void CommandContext::CopySubresource(Resource& Dest, UINT DestSubIndex, Resource& Src, UINT SrcSubIndex)
-    //{
-    //    FlushResourceBarriers();
-
-    //    D3D12_TEXTURE_COPY_LOCATION destLoc =
-    //    {
-    //        Dest.GetResource(),
-    //        D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
-    //        DestSubIndex
-    //    };
-
-    //    D3D12_TEXTURE_COPY_LOCATION srcLoc =
-    //    {
-    //        Src.GetResource(),
-    //        D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
-    //        SrcSubIndex
-    //    };
-
-    //    m_dCommandList->CopyTextureRegion(&destLoc, 0, 0, 0, &srcLoc, nullptr);
-    //}
-
-
-    //void CommandContext::CopyResource(Resource& src, Resource& dest)
-    //{
-    //    m_dCommandList->CopyResource(dest.GetResource(), src.GetResource());
-    //}
+        UpdateSubresources(m_dCommandList.Get(), resource.NativeResource.Get(), dynAlloc.Buffer.NativeResource.Get(),
+            0, 0, numSubresources, subresources);
+    }
 
     void CommandContext::Reset(CommandQueue* commandQueue)
     {
@@ -341,7 +291,7 @@ namespace Kairos {
 
     void ComputeContext::SetRootSignature(const RootSignature& RootSig)
     {
-        m_CurrRootSignature = RootSig.GetD3DRootSignature();
+        m_CurrRootSignature = RootSig.D3DRootSignature();
 
         m_dCommandList->SetComputeRootSignature(m_CurrRootSignature);
 

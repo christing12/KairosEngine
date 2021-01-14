@@ -27,7 +27,7 @@ public:
 	void DiscardAllocator(Uint64 fenceValue, Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator);
 
 	Uint64 Signal(); // fence value is updated on GPU with this
-	void WaitForGPU(Uint64 fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max());
+	void WaitForGPU(Uint64 fenceValue);
 	void Flush();
 
 	bool IsFenceComplete(Uint64 fenceValue);
@@ -40,7 +40,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 	Ref<class Fence> m_Fence;
 	HANDLE m_GPUWaitHandle;
-	Uint64 m_FenceValue = 0;
+	Uint64 m_FenceValue;
 
 	CommandAllocatorPool m_AllocatorPool;
 

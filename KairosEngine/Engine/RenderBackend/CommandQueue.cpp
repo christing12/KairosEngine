@@ -61,11 +61,11 @@ namespace Kairos {
 		if we are, set a blocking event (CPU side) to be called once fenceValue is reached
 		will only be blocked for duration time
 	*/
-	void CommandQueue::WaitForGPU(Uint64 fenceValue, std::chrono::milliseconds duration)
+	void CommandQueue::WaitForGPU(Uint64 fenceValue)
 	{
 		if (!m_Fence->IsComplete(fenceValue)) { // GetCompletedValue = currently completed fence value (checking if we are still working towards fenceValue)
 			m_Fence->SetBlockingEvent(fenceValue, m_GPUWaitHandle);
-			::WaitForSingleObject(m_GPUWaitHandle, static_cast<DWORD>(duration.count())); // make GPu wait up to the duration time
+			::WaitForSingleObject(m_GPUWaitHandle, static_cast<DWORD>(std::chrono::milliseconds::max().count())); // make GPu wait up to the duration time
 		}
 	}
 

@@ -15,6 +15,8 @@ namespace Kairos {
 		Fence = 0x10,
 		Shader = 0x20,
 	};
+	ENUM_FLAG_OPERATORS(RenderResourceType)
+
 
 	/* Opaque handle for all types of GPU Resources
 		8 bits -> resource type
@@ -30,9 +32,9 @@ namespace Kairos {
 		return RenderResourceType((handle.handle & resourceMask) >> 16);
 	}
 
-	inline Uint64 TypeFromHandle(const RenderHandle& handle) {
+	inline RenderResourceType TypeFromHandle(const RenderHandle& handle) {
 		constexpr uint64_t indexMask = (1 << 8) - 1;
-		return handle.handle & indexMask;
+		return static_cast<RenderResourceType>(handle.handle & indexMask);
 	}
 
 	inline Uint64 MetadataFromHandle(const RenderHandle& handle) {
@@ -40,19 +42,6 @@ namespace Kairos {
 		const Uint64 metadataMask = ~mask;
 		return (handle.handle & metadataMask) >> 24;
 	}
-
-
-
-
-
-	D3D12_INPUT_ELEMENT_DESC PBRLayout[] = {
-		{ "POSITION",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",  0, DXGI_FORMAT_R32G32_FLOAT,    0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	};
-
 
 
 
@@ -93,9 +82,16 @@ namespace Kairos {
 	KRS_TYPED_ENUM(BufferType, Uint8)
 	{
 		Vertex = 0,
-		Pixel = Vertex + 1,
-		Constant = Pixel + 1,
+		Index = Vertex + 1,
+		Constant = Index + 1,
 		NumTypes,
+	};
+
+	KRS_TYPED_CLASS_ENUM(RootDescriptorType, Uint8)
+	{
+		CBV,
+		SRV,
+		UAV,
 	};
 
 

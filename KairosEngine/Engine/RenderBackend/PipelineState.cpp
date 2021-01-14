@@ -56,9 +56,9 @@ namespace Kairos {
 	{
 		m_Desc.PS = CD3DX12_SHADER_BYTECODE(pixelShader->GetD3DBlob());
 	}
-	void GraphicsPSO::SetRootSignature(RootSignature& sig)
+	void GraphicsPSO::SetRootSignature(const RootSignature* sig)
 	{
-		m_Desc.pRootSignature = sig.GetD3DRootSignature();
+		m_Desc.pRootSignature = sig->D3DRootSignature();
 	}
 	void GraphicsPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& rasterDesc)
 	{
@@ -135,7 +135,7 @@ namespace Kairos {
 
 	void ComputePSO::SetRootSignature(RootSignature& signature)
 	{
-		m_Desc.pRootSignature = signature.GetD3DRootSignature();
+		m_Desc.pRootSignature = signature.D3DRootSignature();
 	}
 
 	void ComputePSO::SetComputeShader(Ref<class Shader> computeShader)

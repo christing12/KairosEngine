@@ -18,6 +18,7 @@ public:
 	DescriptorAllocation();
 	DescriptorAllocation(D3D12_CPU_DESCRIPTOR_HANDLE CPUHandle, D3D12_GPU_DESCRIPTOR_HANDLE GPUHandle,
 		Uint32 numDescriptors, Uint32 numHandles, Ref<class DescriptorAllocatorPage> pDescriptorPage);
+	DescriptorAllocation(const DescriptorAllocation& other) = default;
 	DescriptorAllocation(DescriptorAllocation&& allocation);
 	DescriptorAllocation& operator=(DescriptorAllocation&& other);
 	~DescriptorAllocation();

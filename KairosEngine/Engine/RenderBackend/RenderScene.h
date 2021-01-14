@@ -4,6 +4,8 @@
 #include <Core/BaseTypes.h>
 #include <Core/ClassTemplates.h>
 
+#include "GraphicsTypes.h"
+
 #include "Buffer.h"
 
 

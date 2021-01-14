@@ -5,6 +5,7 @@
 
 namespace Kairos {
 
+	GlobalUploadPages UploadResourceAllocator::k_AllocatedPages;
 
 	/* -------------------- STAGING BUFFER WITH PAGE-ALLOCATOR --------------------*/
 

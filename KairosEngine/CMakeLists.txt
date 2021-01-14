@@ -116,20 +116,9 @@ source_group("Editor" FILES ${KRS_EDITOR_INC} ${KRS_EDITOR_SRC})
 
 set(KRS_CORE_SHADERS
     Constants.hlsl
-    PixelShader.hlsl
-    VertexShader.hlsl
-    pbr.hlsl
-    tonemap.hlsl
-    skybox.hlsl
-    ShaderMath.hlsl
-    phong.hlsl
-    white.hlsl
-    GenerateMips.hlsl
-    irmap.hlsl
-    spbrdf.hlsl
-    spmap.hlsl
-    textureviewer.hlsl
-    equirect2cube.hlsl
+    EntryPoint.hlsl
+    EngineMain.hlsl
+    Camera.hlsl
 )
 
 

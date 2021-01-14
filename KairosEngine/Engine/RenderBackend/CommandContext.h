@@ -3,6 +3,7 @@
 #include "UploadResourceAllocator.h"
 #include "DynamicDescriptorHeap.h"
 
+#include "GraphicsTypes.h"
 
 namespace Kairos {
 	class RenderDevice;
@@ -24,14 +25,13 @@ namespace Kairos {
 		D3D12_COMMAND_LIST_TYPE GetType() { return m_Type; }
 		ID3D12CommandAllocator* GetAllocator() { return m_CurrCommandAllocator.Get(); }
 
-		void CopyResource(ID3D12Resource* src, ID3D12Resource* dest);
-
 		void TransitionResource(RenderHandle handle, D3D12_RESOURCE_STATES newState, bool flushImmediate = false);
 		void TransitionResource(GPUResource& resource, D3D12_RESOURCE_STATES newState, bool flushImmediate = false);
 		void FlushResourceBarriers();
 
 		// application provides handle, context provides upload memory to move CPU data -> GPU resource
 		void CopyBufferRegion(RenderHandle dest, Uint32 destOffset, CPVoid data, Uint32 sizeInBytes);
+		void InitTexture(struct Texture& resource, Uint32 numSubresources, const D3D12_SUBRESOURCE_DATA subresources[]);
 
 
 

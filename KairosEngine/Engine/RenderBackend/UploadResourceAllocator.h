@@ -38,6 +38,10 @@ public:
 		Uint64 FenceValue;
 		ResourcePage* Page;
 	};
+
+	GlobalUploadPages() = default;
+	~GlobalUploadPages() = default;
+
 	using AllocatedPages = std::vector<Kairos::Scope<ResourcePage>>;
 	using FencedPages = std::queue<RetiredPage>;
 
@@ -73,15 +77,15 @@ public:
 	
 	Uint32 PageSize() const { return m_PageSize; }
 
-private:
 
+private:
+	static GlobalUploadPages k_AllocatedPages;
 private:
 	RenderDevice* m_Device;
 	Uint32 m_PageSize = 0;
 	Uint32 m_CurrOffset = 0;
 	ResourcePage* m_CurrPage = nullptr;
 
-	static GlobalUploadPages k_AllocatedPages;
 
 	std::vector<ResourcePage*> m_PagesInUse;
 	std::vector<ResourcePage*> m_LargePagesInUse;

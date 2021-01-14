@@ -15,6 +15,7 @@
 #include "Engine/Editor/EditorCamera.h"
 #include "Engine/Framework/Camera.h"
 
+#include "Engine/RenderBackend/GraphicsTypes.h"
 #include "Engine/RenderBackend/Buffer.h"
 #include "Engine/RenderBackend/CommandContext.h"
 #include "Engine/RenderBackend/DescriptorHeap.h"
@@ -27,7 +28,6 @@
 #include "Engine/RenderBackend/Shader.h"
 #include "Engine/RenderBackend/SwapChain.h"
 #include "Engine/RenderBackend/Texture.h"
-#include "Engine/RenderBackend/Image.h"
 
 
 // ------------------------- SOME NEW STUFF

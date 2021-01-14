@@ -19,9 +19,9 @@ public:
 	const DXGI_SWAP_CHAIN_DESC1& GetDesc() { return m_Desc; }
 	IDXGISwapChain4* GetD3DSwapChain() { return m_dSwapChain.Get(); }
 
-	Ref<Texture> GetBackBuffer(size_t idx) { return m_BackBuffers[idx]; }
+	Texture* GetBackBuffer(size_t idx) { return m_BackBuffers[idx]; }
 	Uint32 CurrBackBuffer() { return m_dSwapChain->GetCurrentBackBufferIndex(); }
-	Ref<Texture> GetDepthBuffer() { return m_DepthBuffer; }
+	Texture* GetDepthBuffer() { return m_DepthBuffer; }
 
 	void Present();
 protected:
@@ -37,8 +37,8 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dSwapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 m_Desc;
 
-	std::vector<Ref<Texture> > m_BackBuffers;
-	Ref<Texture> m_DepthBuffer;
+	std::vector<Texture*> m_BackBuffers;
+	Texture* m_DepthBuffer;
 };
 
 

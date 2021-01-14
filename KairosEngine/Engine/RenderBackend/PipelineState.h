@@ -48,7 +48,7 @@ namespace Kairos {
 
 		void Finalize();
 
-		void SetRootSignature(RootSignature& signature);
+		void SetRootSignature(const RootSignature* signature);
 		void SetVertexShader(Ref<class Shader> vertexShader);
 		void SetPixelShader(Ref<class Shader> pixelShader);
 		void SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& layoutDesc);

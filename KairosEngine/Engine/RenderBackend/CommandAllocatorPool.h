@@ -4,12 +4,14 @@
 #include "Core/BaseTypes.h"
 
 #include <queue>
+#include <mutex>
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
+class RenderDevice;
+
 class CommandAllocatorPool {
 public:
-	CommandAllocatorPool() = default;
 	CommandAllocatorPool(class RenderDevice* pDevice, D3D12_COMMAND_LIST_TYPE type, const std::wstring& name = L"Command Allocator");
 	~CommandAllocatorPool();
 
@@ -24,12 +26,14 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator;
 	};
 	typedef struct CommandAllocatorEntry CommandAllocatorEntry;
+private:
+	RenderDevice* m_Device; // dont need strong ref I think (maybe change)
+
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> m_Allocators;
 	std::queue<CommandAllocatorEntry> m_CommandAllocators;
 
 	D3D12_COMMAND_LIST_TYPE m_CommandType;
-	class RenderDevice* m_Device; // dont need strong ref I think (maybe change)
 
 	std::mutex m_AllocationMutex;
 

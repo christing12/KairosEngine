@@ -6,6 +6,7 @@
 #include "Core/EngineMath.h"
 #include "Core/Filesystem.h"
 #include "Core/ClassTemplates.h"
+#include "RenderBackend/GraphicsTypes.h"
 
 //
 #include <d3d12.h>

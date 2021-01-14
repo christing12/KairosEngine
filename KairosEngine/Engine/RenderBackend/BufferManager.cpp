@@ -10,7 +10,7 @@ namespace Kairos {
 		{
 		case BufferType::Constant: s = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER; break;
 		case BufferType::Vertex: s = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER; break;
-		case BufferType::Pixel: s = D3D12_RESOURCE_STATE_INDEX_BUFFER; break;
+		case BufferType::Index: s = D3D12_RESOURCE_STATE_INDEX_BUFFER; break;
 		default:
 			KRS_CORE_ERROR("Unknown Buffer Type: No Resource Trasition state detected");
 			break;
@@ -26,24 +26,76 @@ namespace Kairos {
 
 	}
 
-	void BufferManager::AllocVertBuffer(Uint32 numElements, Uint32 stride, void* data)
+	Buffer& BufferManager::GetUnreferencedBuffer(RenderHandle handle)
 	{
+		return Buffer{};
+		KRS_CORE_ASSERT(TypeFromHandle(handle) == RenderResourceType::Buffer, "Not the right type");
+		Uint64 index = IndexFromHandle(handle);
+		BufferType type = BufferTypeFromhandle(handle);
 
-		m_BufferHeaps[BufferType::Vertex].Allocate(numElements * stride);
+		//m_BufferHeaps[type].
 
-
-
+		//return &m_AllocatedTextures[index];
 	}
 
-	void BufferManager::AllocIndexBuffer(Uint32 numElements, Uint32 stride, void* data)
+	RenderHandle BufferManager::AllocVertBuffer(Uint32 numElements, Uint32 stride, void* data)
 	{
+
+		StaticBufferAllocation alloc = m_BufferHeaps[BufferType::Vertex].Allocate(numElements * stride);
+		Buffer vertBuffer;
+		vertBuffer.Data = data;
+		vertBuffer.GPUAddress = alloc.GPUAddress;
+		vertBuffer.NumElements = numElements;
+		vertBuffer.Stride = stride;
+		vertBuffer.Offset = alloc.OffsetFromStart;
+		vertBuffer.ResourceState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		vertBuffer.NativeResource = alloc.NativeResource;
+
+
+
+		Uint32 index = m_AllocatedVertBuffers.size();
+		m_AllocatedVertBuffers.push_back(vertBuffer);
+
+		RenderHandle handle{ static_cast<Uint32>(RenderResourceType::Buffer) | (index << 8) };
+		return handle;
 		
+	}
+
+	RenderHandle BufferManager::AllocIndexBuffer(Uint32 numElements, Uint32 stride, void* data)
+	{
+		StaticBufferAllocation alloc = m_BufferHeaps[BufferType::Index].Allocate(numElements * stride);
+		Buffer idxBuffer;
+		idxBuffer.Data = data;
+		idxBuffer.GPUAddress = alloc.GPUAddress;
+		idxBuffer.NumElements = numElements;
+		idxBuffer.Stride = stride;
+		idxBuffer.Offset = alloc.OffsetFromStart;
+		idxBuffer.ResourceState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		idxBuffer.NativeResource = alloc.NativeResource;
+
+		Uint32 index = m_AllocatedIndexBuffers.size();
+		m_AllocatedIndexBuffers.push_back(idxBuffer);
+
+		RenderHandle handle{ static_cast<Uint32>(RenderResourceType::Buffer) | (index << 8) };
+		return handle;
 	}
 
 
 	void BufferManager::Init() {
 		m_BufferHeaps[BufferType::Vertex] = StaticBufferHeap{ m_Device, BufferType::Vertex, MEMORY_SIZE };
-		m_BufferHeaps[BufferType::Pixel] = StaticBufferHeap{ m_Device, BufferType::Pixel, MEMORY_SIZE };
+		m_BufferHeaps[BufferType::Index] = StaticBufferHeap{ m_Device, BufferType::Index, MEMORY_SIZE };
+	}
+
+	Uint64 BufferManager::IndexFromHandle(const RenderHandle& handle) const
+	{
+		constexpr uint64_t resourceMask = ((1 << 24) - 1) & ~((1 << 8) - 1);
+		return Uint64((handle.handle & resourceMask) >> 8);
+	}
+
+	BufferType BufferManager::BufferTypeFromhandle(const RenderHandle& handle) const
+	{
+		constexpr Uint64 bufferTypeMask = ((1 << 32) - 1) & ~((1 << 24) - 1);
+		return BufferType((handle.handle & bufferTypeMask) >> 24);
 	}
 
 

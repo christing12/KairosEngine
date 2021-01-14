@@ -12,6 +12,7 @@ class RenderDevice;
 
 
 struct Buffer : public GPUResource {
+
 	// Buffer Size = Stride * NumElements
 	Uint32 Stride = 0;
 	Uint32 NumElements = 0;

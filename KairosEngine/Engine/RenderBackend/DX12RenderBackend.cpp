@@ -208,7 +208,6 @@ namespace Kairos {
         return true;
 	}
 
-
     using namespace DX12BackendInternal;
 
 	bool DX12RenderBackend::Setup(ISystemConfig* config)
@@ -254,79 +253,10 @@ namespace Kairos {
 		return true;
 	}
 
-
-
-
-    D3D12_RECT DX12RenderBackend::GetScissor()
-    {
-        return m_Scissor;
-    }
-
-    D3D12_VIEWPORT DX12RenderBackend::GetViewport()
-    {
-        return m_Viewport;
-    }
-
-    Ref<class Texture> DX12RenderBackend::CreateTexture(Uint32 width, Uint32 height, Uint32 depth, DXGI_FORMAT format, D3D12_RESOURCE_FLAGS flags, Uint32 levels, const std::wstring& debugName)
-    {
-        D3D12_RESOURCE_DESC desc = {};
-        desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Width = width;
-        desc.Height = height;
-        desc.DepthOrArraySize = depth;
-        desc.MipLevels = levels;
-        desc.SampleDesc.Count = 1;
-        desc.Format = format;
-        desc.Flags = flags;
-
-        Ref<Texture> texture = nullptr;
-        m_RenderDevice->CreateTexture(texture, desc, D3D12_RESOURCE_STATE_COMMON);
-
-        return texture;
-    }
-
     RenderDevice* DX12RenderBackend::GetRenderDevice()
     {
         KRS_CORE_ASSERT(m_RenderDevice != nullptr, "IEWJFOWPIFEJ");
         return m_RenderDevice.get();
-    }
-
-    Uint32 DX12RenderBackend::GetBackBufferCount()
-    {
-        return m_SwapChainCount;
-    }
-
-    std::pair<Uint32, Uint32> DX12RenderBackend::GetScreenResolution()
-	{
-		return std::pair<Uint32, Uint32>(1024, 1024);
-	}
-
-    Texture& DX12RenderBackend::GetCurrBackBuffer()
-    {
-        return *(m_SwapChain->GetBackBuffer(m_CurrBackBuffer));
-        // TODO: insert return statement here
-    }
-
-    Uint32 DX12RenderBackend::CurrBufferIndex()
-    {
-        return m_CurrBackBuffer;
-    }
-
-    void DX12RenderBackend::Present()
-    {
-        GraphicsContext& gfxContext = m_RenderDevice->AllocateCommandContext(D3D12_COMMAND_LIST_TYPE_DIRECT).GetGraphicsContext();
-        gfxContext.TransitionResource(GetCurrBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, true);
-        gfxContext.Submit(true);
-
-        m_SwapChain->Present();
-        m_CurrBackBuffer = m_SwapChain->GetD3DSwapChain()->GetCurrentBackBufferIndex();
-        m_RenderDevice->ReleaseStaleDescriptors();
-    }
-
-
-    void DX12RenderBackend::PreparePipeline(Ref<class PipelineState> pipeline, GraphicsContext& context)
-    {
-
     }
 
 }

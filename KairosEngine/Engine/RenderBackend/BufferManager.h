@@ -54,14 +54,18 @@ public:
 	Uint32 Size() const { return MEMORY_SIZE; }
 	// only use internally! do not keep copies!!!!
 	Buffer& GetUnreferencedBuffer(RenderHandle handle);
-	void AllocVertBuffer(Uint32 numElements, Uint32 stride, void* data = nullptr);
-	void AllocIndexBuffer(Uint32 numElements, Uint32 stride, void* data = nullptr);
+	RenderHandle AllocVertBuffer(Uint32 numElements, Uint32 stride, void* data = nullptr);
+	RenderHandle AllocIndexBuffer(Uint32 numElements, Uint32 stride, void* data = nullptr);
 private:
 	
 	void Init();
 
 private:
+	Uint64 IndexFromHandle(const RenderHandle& handle) const;
+	BufferType BufferTypeFromhandle(const RenderHandle& handle) const;
 
+	std::vector<Buffer> m_AllocatedVertBuffers;
+	std::vector<Buffer> m_AllocatedIndexBuffers;
 
 	void AllocBuffer(StaticBufferHeap& heap, Uint32 numElements, Uint32 stride, void* data);
 

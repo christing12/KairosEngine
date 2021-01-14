@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "Texture.h"
 
+
 #include "Systems/Interface/IEngine.h"
 #include "Systems/WinWindowSystem.h"
 
@@ -85,8 +86,8 @@ namespace Kairos {
 			hr = m_dSwapChain->GetBuffer(frame, IID_PPV_ARGS(&backBuffer));
 			KRS_CORE_ASSERT(SUCCEEDED(hr), "Issue with getting back buffer from swap chian");
 
-			m_Device->CreateTexture(m_BackBuffers[frame], backBuffer, D3D12_RESOURCE_STATE_PRESENT);
-			m_BackBuffers[frame]->SetName(L"Back Buffer " + frame);
+			RenderHandle handle = m_Device->CreateTexture(backBuffer, D3D12_RESOURCE_STATE_PRESENT);
+			m_BackBuffers[frame] = m_Device->m_TextureManager.GetUnreferencedTexture(handle);
 		}
 		D3D12_CLEAR_VALUE clearVal = {};
 		clearVal.Format = DXGI_FORMAT_D32_FLOAT;
@@ -96,7 +97,8 @@ namespace Kairos {
 			m_Width, m_Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 		depthBufferDesc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
 
-		m_Device->CreateTexture(m_DepthBuffer, depthBufferDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearVal);
+		RenderHandle handle = m_Device->CreateTexture(depthBufferDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearVal);
+		m_DepthBuffer = m_Device->m_TextureManager.GetUnreferencedTexture(handle);
 	}
 
 	void SwapChain::Present() {
