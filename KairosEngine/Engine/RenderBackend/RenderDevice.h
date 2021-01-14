@@ -52,7 +52,10 @@ public:
 		
 
 	RenderDevice(Microsoft::WRL::ComPtr<ID3D12Device2> pDevice);
-	ID3D12Device2* GetD3DDevice() { return m_dDevice.Get(); }
+	ID3D12Device2* GetD3DDevice() { 
+		KRS_CORE_ASSERT(m_dDevice != nullptr, "Render Device is null");
+		return m_dDevice.Get(); 
+	}
 	CommandQueue* GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
 public:
 	// ---  GPU RESOURCE CREATION FUNCTIONS -------------------//
@@ -69,6 +72,7 @@ public:
 
 	void TransientCommand(std::function<void(CommandContext& cmd)>&& function);
 
+	void CompileAll();
 
 public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRV(RenderHandle handle);

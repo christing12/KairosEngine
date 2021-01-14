@@ -123,6 +123,24 @@ void App::SetupResources() {
 
 	auto backend = g_Engine->GetRenderBackend();
 
+	backend->GetRenderDevice()->CreateRootSignature("Base", [&](RootSignature& sig)
+		{
+			//sig.AddDescriptor(RootDescriptor())
+		});
+	backend->GetRenderDevice()->CreateGraphicsPSO("PBR", [&](GraphicsPipelineProxy& proxy)
+		{
+			proxy.VSFile = "test.hlsl";
+			proxy.PSFile = "test.hlsl";
+			proxy.RootSigName = "Base";
+			proxy.DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			proxy.RenderTargetFormats = {
+				DXGI_FORMAT_R8G8B8A8_UNORM,
+			};
+			proxy.InputLayout = D3D12_INPUT_LAYOUT_DESC{ PBRLayout, _countof(PBRLayout) };
+		});
+
+	backend->GetRenderDevice()->CompileAll();
+
 	// PBR Pipeline 
 	//{
 	//	Ref<RootSignature> PBRSignature = backend->AllocateRootSignature("PBR", 3, 2);

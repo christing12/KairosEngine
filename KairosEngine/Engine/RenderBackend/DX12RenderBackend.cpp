@@ -129,7 +129,7 @@ namespace Kairos {
 
 
         ComPtr<ID3D12Device2> pdDevice;
-        hr = D3D12CreateDevice(m_Adapter.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&pdDevice));
+        hr = D3D12CreateDevice(m_Adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pdDevice));
         KRS_CORE_ASSERT(SUCCEEDED(hr), "Issue with Creating ID3D12Device");
 
 

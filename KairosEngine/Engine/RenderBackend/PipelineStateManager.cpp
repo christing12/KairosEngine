@@ -15,7 +15,7 @@ namespace Kairos {
 
 	RenderHandle PipelineStateManager::CreateRootSignature(const std::string& name, const RootSignatureFn& sigFn)
 	{
-		RootSignature sig;
+		RootSignature sig(m_Device);
 		
 		sigFn(sig);
 
@@ -30,7 +30,7 @@ namespace Kairos {
 
 	RenderHandle PipelineStateManager::CreateGraphicsPipelineState(PSOName name, const GraphicsPipelineFn& pipelineFn)
 	{
-		KRS_CORE_ASSERT(GetPipelineState(name).Valid(), "Pipeline State already exists!");
+	//	KRS_CORE_ASSERT(GetPipelineState(name).Valid(), "Pipeline State already exists!");
 
 		GraphicsPipelineProxy proxy{};
 
@@ -69,6 +69,14 @@ namespace Kairos {
 		return RenderHandle();
 	}
 
+	void PipelineStateManager::CompileAll()
+	{
+		for (RootSignature& sig : m_RegisteredRS)
+		{
+			sig.Finalize(D3D12_ROOT_SIGNATURE_FLAG_NONE);
+		}
+	}
+
 	RenderHandle PipelineStateManager::GetPipelineState(PSOName name)
 	{
 		auto it = m_PipelineNameCache.find(name);
@@ -87,76 +95,76 @@ namespace Kairos {
 	void PipelineStateManager::AddGlobalRootSigParam(RootSignature& signature)
 	{
 		// Global data CB
-		signature.AddDescriptor(RootDescriptor{ 0, 10, RootDescriptorType::CBV });
+		signature.AddDescriptor(RootDescriptor{ 0, 10, D3D12_ROOT_PARAMETER_TYPE_CBV, ShaderRegister::ConstantBuffer });
 
 		// Frame-specific data CB
-		signature.AddDescriptor(RootDescriptor{ 1, 10, RootDescriptorType::CBV });
+		signature.AddDescriptor(RootDescriptor{ 1, 10, D3D12_ROOT_PARAMETER_TYPE_CBV, ShaderRegister::ConstantBuffer });
 
 		// Pass-specific data CB
-		signature.AddDescriptor(RootDescriptor{ 2, 10, RootDescriptorType::CBV });
+		signature.AddDescriptor(RootDescriptor{ 2, 10, D3D12_ROOT_PARAMETER_TYPE_CBV, ShaderRegister::ConstantBuffer });
 
 		// Unbounded Texture2D range
 		RootDescriptorTable textures2D;
-		textures2D.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10 });
+		textures2D.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 10 });
 		signature.AddDescriptorTable(textures2D);
 
 		// Unbounded Texture2D<uint4> range
 		RootDescriptorTable textures2DUInt4;
-		textures2DUInt4.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 11 });
+		textures2DUInt4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 11 });
 		signature.AddDescriptorTable(textures2DUInt4);
 
 		// Unbounded Texture3D range
 		RootDescriptorTable textures3D;
-		textures3D.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 12 });
+		textures3D.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 12 });
 		signature.AddDescriptorTable(textures3D);
 
 		// Unbounded Texture3D<uint4> range
 		RootDescriptorTable textures3DUInt4;
-		textures3DUInt4.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 13 });
+		textures3DUInt4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 13 });
 		signature.AddDescriptorTable(textures3DUInt4);
 
 		// Unbounded Texture2DArray range
 		RootDescriptorTable texture2DArrays;
-		texture2DArrays.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 14 });
+		texture2DArrays.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 14 });
 		signature.AddDescriptorTable(texture2DArrays);
 
 		// Unbounded RWTexture2D range
 		RootDescriptorTable RWTextures2DFloat4;
-		RWTextures2DFloat4.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 10 });
+		RWTextures2DFloat4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 10 });
 		signature.AddDescriptorTable(RWTextures2DFloat4);
 
 		// Unbounded RWTexture2D<uint4> range
 		RootDescriptorTable RWTextures2DUInt4;
-		RWTextures2DUInt4.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 11 });
+		RWTextures2DUInt4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 11 });
 		signature.AddDescriptorTable(RWTextures2DUInt4);
 
 		// Unbounded RWTexture2D<uint> range
 		RootDescriptorTable RWTextures2DUInt;
-		RWTextures2DUInt.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 12 });
+		RWTextures2DUInt.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 12 });
 		signature.AddDescriptorTable(RWTextures2DUInt);
 
 		// Unbounded RWTexture3D range
 		RootDescriptorTable RWTextures3D;
-		RWTextures3D.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 13 });
+		RWTextures3D.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 13 });
 		signature.AddDescriptorTable(RWTextures3D);
 
 		// Unbounded RWTexture3D<uint4> range
 		RootDescriptorTable RWTextures3DUInt4;
-		RWTextures3DUInt4.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 14 });
+		RWTextures3DUInt4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 14 });
 		signature.AddDescriptorTable(RWTextures3DUInt4);
 
 		// Unbounded RWTexture2DArray range
 		RootDescriptorTable RWTexture2DArrays;
-		RWTexture2DArrays.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 15 });
+		RWTexture2DArrays.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 15 });
 		signature.AddDescriptorTable(RWTexture2DArrays);
 
-		// Unbounded Samplers range
+		//Unbounded Samplers range
 		RootDescriptorTable samplers;
-		samplers.AddDescriptorRange(RootDescriptorTableRange{ D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, 10 });
+		samplers.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::Sampler, 0, 10 });
 		signature.AddDescriptorTable(samplers);
 
 		// Debug readback buffer
-		signature.AddDescriptor(RootDescriptor{ 0, 16, RootDescriptorType::UAV });
+		signature.AddDescriptor(RootDescriptor{ 0, 16, D3D12_ROOT_PARAMETER_TYPE_UAV, ShaderRegister::UnorderedAcces });
 	}
 
 	const RootSignature* PipelineStateManager::GetRootSignature(const std::string& name)

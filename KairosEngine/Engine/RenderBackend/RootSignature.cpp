@@ -26,7 +26,7 @@ namespace Kairos {
 		hashValue <<= std::numeric_limits<decltype(key.BaseRegister)>::digits;
 		hashValue |= key.RegisterSpace;
 		hashValue <<= std::numeric_limits<decltype(key.RegisterSpace)>::digits;
-		//hashValue |= std::underlying_type_t<ShaderRegister>(key.RegisterType);
+		hashValue |= std::underlying_type_t<ShaderRegister>(key.RegisterType);
 		return hashValue;
 	}
 
@@ -54,41 +54,44 @@ namespace Kairos {
 	RootConstants::RootConstants(Uint32 baseRegister, Uint32 num32bitVals, Uint32 registerSpace, D3D12_SHADER_VISIBILITY vis)
 		: RootParameter(D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS, vis)
 	{
-		AddSignatureLocation({ baseRegister, registerSpace });
+		AddSignatureLocation({ baseRegister, registerSpace, ShaderRegister::ConstantBuffer });
 		m_Parameter.Constants = { baseRegister, registerSpace , num32bitVals };
 	}
 
 
-	D3D12_ROOT_PARAMETER_TYPE GetD3DDescriptorType(RootDescriptorType type)
+	D3D12_DESCRIPTOR_RANGE_TYPE GetD3DDescriptorType(ShaderRegister type)
 	{
 		switch (type)
 		{
-		case RootDescriptorType::CBV: return D3D12_ROOT_PARAMETER_TYPE_CBV;
-		case RootDescriptorType::SRV: return D3D12_ROOT_PARAMETER_TYPE_SRV;
-		case RootDescriptorType::UAV: return D3D12_ROOT_PARAMETER_TYPE_UAV;
-		default: 
+		case ShaderRegister::ConstantBuffer: return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+		case ShaderRegister::ShaderResource: return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		case ShaderRegister::UnorderedAcces: return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+		case ShaderRegister::Sampler: return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+		default:
 			KRS_CORE_ERROR("WTF");
 			break;
 		}
 
-		return D3D12_ROOT_PARAMETER_TYPE_CBV;
+		return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 	}
 
-	RootDescriptor::RootDescriptor(Uint32 baseRegister, Uint32 registerSpace, RootDescriptorType type, D3D12_SHADER_VISIBILITY vis)
-		: RootParameter(GetD3DDescriptorType(type), vis)
+	RootDescriptor::RootDescriptor(Uint32 baseRegister, Uint32 registerSpace, D3D12_ROOT_PARAMETER_TYPE type, ShaderRegister shaderRegisterType,
+		D3D12_SHADER_VISIBILITY vis)
+		: RootParameter(type, vis)
 	{
-		AddSignatureLocation({ baseRegister, registerSpace });
+		AddSignatureLocation({ baseRegister, registerSpace, shaderRegisterType });
 		m_Parameter.Descriptor = { baseRegister, registerSpace };
 	}
 
 
-	RootDescriptorTableRange::RootDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE type, Uint32 numDescriptors, Uint32 baseRegister, Uint32 registerSpace)
+	RootDescriptorTableRange::RootDescriptorTableRange(ShaderRegister type, Uint32 baseRegister, Uint32 registerSpace, Uint32 numDescriptors)
 	{
 		m_Range.BaseShaderRegister = baseRegister;
 		m_Range.NumDescriptors = numDescriptors;
 		m_Range.RegisterSpace = registerSpace;
 		m_Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-		m_Range.RangeType = type;
+		m_Range.RangeType = GetD3DDescriptorType(type);
+		m_Type = type;
 	}
 
 
@@ -130,7 +133,7 @@ namespace Kairos {
 
 	void RootDescriptorTable::AddDescriptorRange(const RootDescriptorTableRange& range)
 	{
-		AddSignatureLocation({ (Uint16)range.D3DRange().BaseShaderRegister, (Uint16)range.D3DRange().RegisterSpace });
+		AddSignatureLocation({ (Uint16)range.D3DRange().BaseShaderRegister, (Uint16)range.D3DRange().RegisterSpace, range.RegisterType() });
 
 		m_Ranges.push_back(range.D3DRange());
 		m_Parameter.DescriptorTable.pDescriptorRanges = &m_Ranges[0];

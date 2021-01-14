@@ -11,13 +11,20 @@ KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;
 
+enum class ShaderRegister : Uint8
+{
+	ShaderResource = 1 << 1,
+	ConstantBuffer = 1 << 2,
+	UnorderedAcces = 1 << 3,
+	Sampler = 1 << 4
+};
 
 class RootParameter {
 public:
 	struct RootSigLoc {
 		Uint32 BaseRegister = 0;
 		Uint32 RegisterSpace = 0;
-		//ShaderRegister RegisterType;
+		ShaderRegister RegisterType;
 	};
 
 	struct LocationHasher { size_t operator()(const RootSigLoc& key) const; };
@@ -45,7 +52,8 @@ public:
 
 class RootDescriptor : public RootParameter {
 public:
-	RootDescriptor(Uint32 baseRegister, Uint32 registerSpace, RootDescriptorType type, D3D12_SHADER_VISIBILITY = D3D12_SHADER_VISIBILITY_ALL);
+	RootDescriptor(Uint32 baseRegister, Uint32 registerSpace, D3D12_ROOT_PARAMETER_TYPE type, ShaderRegister shaderRegisterType,
+		D3D12_SHADER_VISIBILITY = D3D12_SHADER_VISIBILITY_ALL);
 	~RootDescriptor() = default;
 };
 
@@ -55,11 +63,14 @@ class RootDescriptorTableRange
 public:
 	inline static Uint32 UnboundedRangeSize = UINT_MAX;
 	KRS_CLASS_DEFAULT(RootDescriptorTableRange);
-	RootDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE type, Uint32 baseRegister, Uint32 registerSpace, Uint32 numDescriptors = UnboundedRangeSize);
+	RootDescriptorTableRange(ShaderRegister type, Uint32 baseRegister, Uint32 registerSpace, Uint32 numDescriptors = UnboundedRangeSize);
 
 	inline const D3D12_DESCRIPTOR_RANGE& D3DRange() const { return m_Range; }
+
+	inline const ShaderRegister& RegisterType() const { return m_Type; }
 private:
 	D3D12_DESCRIPTOR_RANGE m_Range;
+	ShaderRegister m_Type;
 };
 
 

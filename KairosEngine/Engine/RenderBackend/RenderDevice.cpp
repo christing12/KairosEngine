@@ -12,13 +12,14 @@ namespace Kairos {
 		, m_BufferManager(this)
 		, m_TextureManager(this)
 		, m_ShaderManager(this, Filesystem::GetWorkingDirectory())
-		, m_PSOManager(this, &m_ShaderManager)
+		//, m_PSOManager(this, &m_ShaderManager)
 	{
 		for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i) {
 			m_DescriptorAllocators[i] = CreateRef<DescriptorAllocator>(this, D3D12_DESCRIPTOR_HEAP_TYPE(i));
 		}
 		CreateCommandQueues();
 	//	m_BufferManager = BufferManager(this);
+		m_PSOManager = PipelineStateManager(this, &m_ShaderManager);
 	}
 
 	void RenderDevice::Shutdown()
@@ -167,6 +168,11 @@ namespace Kairos {
 		CommandContext ctx = AllocateCommandContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
 		function(ctx);
 		ctx.Submit(true);
+	}
+
+	void RenderDevice::CompileAll()
+	{
+		m_PSOManager.CompileAll();
 	}
 
 	RenderHandle RenderDevice::CreateVertBuffer(Uint32 numElements, Uint32 stride, void* data)

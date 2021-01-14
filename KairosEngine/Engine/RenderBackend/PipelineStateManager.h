@@ -41,13 +41,15 @@ struct ComputePiplineProxy {
 class PipelineStateManager {
 public:
 	friend class CommandContext;
-	KRS_CLASS_NON_COPYABLE_AND_MOVABLE(PipelineStateManager);
-
+	//KRS_CLASS_NON_COPYABLE_AND_MOVABLE(PipelineStateManager);
+	PipelineStateManager() = default;
 
 	PipelineStateManager(
 		class RenderDevice* pDevice,
 		class ShaderManager* shaderManager
 	);
+
+	//void Init(class RenderDevice* pDevice, class ShaderManager* shad
 
 	using PSOName = std::string;
 	using RSName = std::string;
@@ -63,10 +65,9 @@ public:
 	//void CreateRootSignature(PSOName name, )
 
 
+	void CompileAll();
 	// checks for name to see if its already been registered
 	RenderHandle GetPipelineState(PSOName name);
-
-
 
 private:
 	RenderDevice* m_Device;
