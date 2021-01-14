@@ -6,7 +6,7 @@
 namespace Kairos {
 	class RootSignature;
 
-
+	struct Shader;
 
 
 
@@ -49,8 +49,8 @@ namespace Kairos {
 		void Finalize();
 
 		void SetRootSignature(const RootSignature* signature);
-		void SetVertexShader(Ref<class Shader> vertexShader);
-		void SetPixelShader(Ref<class Shader> pixelShader);
+		void SetVertexShader(Shader* vertexShader);
+		void SetPixelShader(Shader* pixelShader);
 		void SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& layoutDesc);
 		void SetRenderTargets(Uint32 numRTV, const DXGI_FORMAT* formats, DXGI_FORMAT dsvFormat);
 		void SetRenderTarget(DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat);
@@ -87,7 +87,7 @@ namespace Kairos {
 		void Finalize();
 
 		void SetRootSignature(RootSignature& signature);
-		void SetComputeShader(Ref<class Shader> computeShader);
+		void SetComputeShader(Shader* computeShader);
 	private:
 		D3D12_COMPUTE_PIPELINE_STATE_DESC m_Desc;
 	};

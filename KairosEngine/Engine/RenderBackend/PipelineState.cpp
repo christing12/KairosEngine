@@ -48,13 +48,15 @@ namespace Kairos {
 	//{
 	//	m_Desc.pRootSignature = rootSignature->GetD3DRootSignature();
 	//}
-	void GraphicsPSO::SetVertexShader(Ref<Shader> vertexShader)
+	void GraphicsPSO::SetVertexShader(Shader* vertexShader)
 	{
-		m_Desc.VS = CD3DX12_SHADER_BYTECODE(vertexShader->GetD3DBlob());
+		m_Desc.VS.BytecodeLength = vertexShader->Code->GetBufferSize();
+		m_Desc.VS.pShaderBytecode = vertexShader->Code->GetBufferPointer();
 	}
-	void GraphicsPSO::SetPixelShader(Ref<Shader> pixelShader)
+	void GraphicsPSO::SetPixelShader(Shader* pixelShader)
 	{
-		m_Desc.PS = CD3DX12_SHADER_BYTECODE(pixelShader->GetD3DBlob());
+		m_Desc.PS.BytecodeLength = pixelShader->Code->GetBufferSize();
+		m_Desc.PS.pShaderBytecode = pixelShader->Code->GetBufferPointer();
 	}
 	void GraphicsPSO::SetRootSignature(const RootSignature* sig)
 	{
@@ -138,9 +140,10 @@ namespace Kairos {
 		m_Desc.pRootSignature = signature.D3DRootSignature();
 	}
 
-	void ComputePSO::SetComputeShader(Ref<class Shader> computeShader)
+	void ComputePSO::SetComputeShader(Shader* computeShader)
 	{
-		m_Desc.CS = CD3DX12_SHADER_BYTECODE(computeShader->GetD3DBlob());
+		m_Desc.CS.BytecodeLength = computeShader->Code->GetBufferSize();
+		m_Desc.CS.pShaderBytecode = computeShader->Code->GetBufferPointer();
 	}
 
 

@@ -4,6 +4,8 @@
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <dxgidebug.h>
+#include <d3d12shader.h>
+#include <dxcapi.h>
 
 #include <API.h>
 

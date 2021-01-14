@@ -69,6 +69,7 @@ set(KRS_GRAPHICS_CORE_INC
     DX12RenderBackend.h
     PipelineStateManager.h
     RenderScene.h
+    ShaderCompiler.h
 )
 
 set(KRS_GRAPHICS_CORE_SRC
@@ -90,6 +91,7 @@ set(KRS_GRAPHICS_CORE_SRC
     DX12RenderBackend.cpp
     PipelineStateManager.cpp
     RenderScene.cpp
+    ShaderCompiler.cpp
 )
 
 list(TRANSFORM KRS_GRAPHICS_CORE_INC PREPEND "Engine/RenderBackend/")
@@ -119,6 +121,7 @@ set(KRS_CORE_SHADERS
     EntryPoint.hlsl
     EngineMain.hlsl
     Camera.hlsl
+    test.hlsl
 )
 
 
@@ -248,6 +251,7 @@ target_link_libraries(${LIB_NAME} PUBLIC DirectXTK12 assetlib imgui stb_image js
     d3dcompiler.lib
     dxguid.lib
     WinPixEventRuntime
+    shader_compiler
 )
 
 

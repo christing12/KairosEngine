@@ -64,8 +64,13 @@ namespace Kairos {
 		Vertex	= 0,
 		Pixel	= 1u,
 		Compute = 2u,
-
+		Hull,
+		Domain,
+		Geometry,
 	};
+
+
+
 
 	KRS_TYPED_CLASS_ENUM(HeapType, Uint8)
 	{

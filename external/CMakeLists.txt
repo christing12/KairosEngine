@@ -63,6 +63,15 @@ target_include_directories(assimp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/assimp/i
 target_link_libraries(assimp INTERFACE ${assimp_lib})
 
 
+#------------- SHADER COMPILER ----------------------
+add_library(shader_compiler INTERFACE)
+
+set(compiler_dll ${CMAKE_CURRENT_SOURCE_DIR}/DirectXShaderCompiler/bin/x64/dxcompiler.dll)
+set(compiler_lib ${CMAKE_CURRENT_SOURCE_DIR}/DirectXShaderCompiler/lib/x64/dxcompiler.lib)
+
+target_include_directories(shader_compiler INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/DirectXShaderCompiler/include)
+target_link_libraries(shader_compiler INTERFACE ${compiler_lib})
+
 # ------------------------ PIX (GRAPHICS DEBUGGING) ---------------
 add_library(WinPixEventRuntime INTERFACE)
 

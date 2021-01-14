@@ -16,6 +16,7 @@
 #include "d3dx12.h"
 #include <DirectXTK/SimpleMath.h>
 
+
 #pragma comment (lib, "d3d12.lib") 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -23,7 +24,8 @@
 //
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
-
+#include <d3d12shader.h>
+#include <dxcapi.h>
 
 #include <stdlib.h>
 #include <malloc.h>

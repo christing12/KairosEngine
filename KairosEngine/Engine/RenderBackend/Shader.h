@@ -4,42 +4,25 @@
 #include "Core/EngineCore.h"
 #include "Core/BaseTypes.h"
 #include "GraphicsTypes.h"
+#include "ShaderCompiler.h"
 #include <filesystem>
 
 
 namespace Kairos {
-	struct ShaderCreateInfo {
-		ShaderType Type;
-		std::wstring FilePath;
-		const Char* EntryPoint;
+	class RenderDevice;
 
-		const void* ByteCode;
-		size_t ByteCodeSize;
-
-		ShaderCreateInfo(ShaderType _type, const std::wstring& _filePath, const Char* _entryPoint,
-			const void* _byteCode = nullptr, size_t _byteCodeSize = 0)
-			: Type(_type)
-			, FilePath(_filePath)
-			, EntryPoint(_entryPoint)
-			, ByteCode(_byteCode)
-			, ByteCodeSize(_byteCodeSize)
+	struct Shader
+	{
+		Shader() = default;
+		Shader(const Microsoft::WRL::ComPtr<IDxcBlob>& code, const std::string& entryPoint, ShaderType type)
+			: Code(code)
+			, EntryPoint(entryPoint)
+			, Type(type)
 		{}
-	};
-	typedef struct ShaderCreateInfo ShaderCreateInfo;
 
-	class Shader {
-	public:
-		KRS_CLASS_DEFAULT(Shader);
-
-		Shader(class RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3DBlob> blob);
-
-		ID3DBlob* GetD3DBlob() { return m_ShaderBlob.Get(); }
-	private:
-		class RenderDevice* m_Device;
-
-		Microsoft::WRL::ComPtr<ID3DBlob> m_ShaderBlob;
-		D3D12_SHADER_BYTECODE m_ByteCode;
-
+		ShaderType Type;
+		Microsoft::WRL::ComPtr<IDxcBlob> Code;
+		std::string EntryPoint;
 	};
 	
 
@@ -48,15 +31,14 @@ namespace Kairos {
 		KRS_CLASS_NON_COPYABLE_AND_MOVABLE(ShaderManager);
 		ShaderManager(RenderDevice* pDevice, const std::filesystem::path& workingDirectory);
 		
-		Ref<Shader> LoadShader(ShaderType type, const std::string& entryPoint, const std::string& relativePath);
+		Shader* LoadShader(ShaderType type, const std::string& entryPoint, const std::string& relativePath);
 		
 	
 	private:
-		String BuildShaderProfile(ShaderType type);
-
+		ShaderCompiler m_Compiler;
 
 		RenderDevice* m_Device;
-		std::vector<Ref<Shader>> m_ShaderCache;
+		std::unordered_map<std::string, Shader> m_ShaderCache;
 
 		std::filesystem::path m_ExecutablePath;
 		std::filesystem::path m_ShaderSrcPath;
