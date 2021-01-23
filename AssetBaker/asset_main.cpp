@@ -95,8 +95,8 @@ void extract_assimp_meshes(const aiScene* scene, const fs::path& input, const fs
 		auto mesh = scene->mMeshes[meshIndex];
 
 		using VertexFormat = assets::Vertex;
-
-		std::string meshName = calculate_assimp_mesh_name(scene, meshIndex);
+		std::cout << input.stem() << std::endl;
+		std::string meshName = input.stem().generic_string();
 		
 		std::vector<VertexFormat> vertices;
 		std::vector<uint32_t> indices;
@@ -107,6 +107,8 @@ void extract_assimp_meshes(const aiScene* scene, const fs::path& input, const fs
 			vert.position[0] = mesh->mVertices[v].x;
 			vert.position[1] = mesh->mVertices[v].y;
 			vert.position[2] = mesh->mVertices[v].z;
+
+		//	std::cout << "[" << vert.position[0] << ", " << vert.position[1] << ", " << vert.position[2] << "]" << std::endl;
 
 			if (mesh->HasNormals()) {
 				vert.normal[0] = mesh->mNormals[v].x;
@@ -141,7 +143,6 @@ void extract_assimp_meshes(const aiScene* scene, const fs::path& input, const fs
 			if (input.extension() == ".fbx") {
 
 			}
-
 		}
 
 		MeshInfo meshInfo;
@@ -156,7 +157,6 @@ void extract_assimp_meshes(const aiScene* scene, const fs::path& input, const fs
 
 		fs::path meshpath = outputFolder / (meshName + ".mesh");
 		save_binaryfile(meshpath.string().c_str(), newFile);
-	
 	}
 }
 
@@ -164,9 +164,8 @@ void extract_assimp_meshes(const aiScene* scene, const fs::path& input, const fs
 
 using namespace DirectX::SimpleMath;
 int main(int argc, char* argv[]) {
-	Vector3 test = Vector3::Zero;
-	std::cout << test.x << " " << test.y << " " << test.z << std::endl;
-	if (argc < 3) {
+	std::cout << argc << std::endl;
+	if (argc < 2) {
 		std::cout << "Command Line needs path to info file\n";
 		return -1;
 	}
@@ -203,21 +202,22 @@ int main(int argc, char* argv[]) {
 		//}
 
 		{
-			fs::path path{ argv[2] };
+			fs::path path{ argv[1] };
 			fs::path directory = path;
 			fs::path exported_dir = path.parent_path() / "assets_export";
+			
 
-			std::cout << "Loaded asset directory at " << directory << std::endl;
+			std::cout << "Loaded asset directory at " << path << std::endl;
 
 
 			ConverterState convState{ path, exported_dir };
 
 
 			for (auto& p : fs::recursive_directory_iterator(directory)) {
-				std::cout << "File: " << p;
+				std::cout << "File: " << p << std::endl;
 				auto relative = p.path().lexically_proximate(directory);
-
 				auto export_path = exported_dir / relative;
+
 				if (!fs::is_directory(export_path.parent_path()))
 					fs::create_directory(export_path.parent_path());
 
@@ -231,12 +231,13 @@ int main(int argc, char* argv[]) {
 						aiProcess_CalcTangentSpace	|
 						aiProcess_FlipUVs			|
 						aiProcess_MakeLeftHanded	|
-						aiProcess_Triangulate		|
-						aiProcess_JoinIdenticalVertices);
+						aiProcess_Triangulate		
+						//aiProcess_JoinIdenticalVertices
+					);
 
-					auto folder = export_path.parent_path() / (p.path().stem().string() + "_Mesh");
-					fs::create_directory(folder);
-
+					auto folder = export_path.parent_path(); // / (p.path().stem().string() + "_Mesh");
+					//fs::create_directory(folder);
+					
 					extract_assimp_meshes(scene, p.path(), folder, convState);
 				}
 			}

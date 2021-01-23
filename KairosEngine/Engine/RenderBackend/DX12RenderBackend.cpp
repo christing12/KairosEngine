@@ -1,49 +1,18 @@
 #include "krspch.h"
 #include "DX12RenderBackend.h"
 
-#include "RenderDevice.h"
-#include "SwapChain.h"
-#include "CommandContext.h"
+#include "RHI/RenderDevice.h"
+#include "RHI/SwapChain.h"
 #include "Systems/Interface/IEngine.h"
-
-#include "RootSignature.h"
-#include "Shader.h"
-#include "PipelineState.h"
-
-#include "Texture.h"
+#include "Scene/Scene.h"
 
 extern Kairos::IEngine* g_Engine;
 
 namespace Kairos {
 
-    
-	namespace DX12BackendInternal {
-		bool Setup(IRenderBackendConfig* config);
+   
 
-		Ref<RenderDevice> m_RenderDevice;
-		Ref<SwapChain> m_SwapChain;
-
-        Uint32 m_CurrBackBuffer;
-
-        D3D12_RECT m_Scissor;
-        D3D12_VIEWPORT m_Viewport;
-
-        Uint32 m_SwapChainCount = 2;
-
-        bool CreateDebugLayer();
-        bool CreateRenderDevice();
-        bool CreateSwapChain();
-
-        ComPtr<ID3D12Debug> m_debugInterface;
-        ComPtr<IDXGIAdapter4> m_Adapter;
-        ComPtr<IDXGIOutput1> m_AdapterOutput;
-        DXGI_ADAPTER_DESC m_AdapterDesc;
-        int32_t m_VideoCardMemory = 0;
-        char m_VideoCardDescription[128];
-
-	}
-
-    bool DX12BackendInternal::CreateDebugLayer() {
+    bool DX12RenderBackend::CreateDebugLayer() {
        // ComPtr<ID3D12Debug> debugInterface;
 
         auto hr = D3D12GetDebugInterface(IID_PPV_ARGS(&m_debugInterface));
@@ -64,7 +33,7 @@ namespace Kairos {
         return true;
     }
 
-    bool DX12BackendInternal::CreateRenderDevice() {
+    bool DX12RenderBackend::CreateRenderDevice() {
 
         UINT dxgiFlag = 0;
 #if defined(_DEBUG)
@@ -128,7 +97,7 @@ namespace Kairos {
         }
 
 
-        ComPtr<ID3D12Device2> pdDevice;
+        ComPtr<ID3D12Device5> pdDevice;
         hr = D3D12CreateDevice(m_Adapter.Get(), D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pdDevice));
         KRS_CORE_ASSERT(SUCCEEDED(hr), "Issue with Creating ID3D12Device");
 
@@ -161,13 +130,13 @@ namespace Kairos {
 
         KRS_CORE_ASSERT(SUCCEEDED(pInfoQueue->PushStorageFilter(&NewFilter)), "error with storage filter");
 
-
+        pdDevice->SetName(L"Logical Device");
         m_RenderDevice = CreateRef<RenderDevice>(pdDevice);
         return true;
 
 
     }
-    bool DX12BackendInternal::CreateSwapChain() {
+    bool DX12RenderBackend::CreateSwapChain() {
 
         // --- Creating Swap Chain --- //
         DXGI_SWAP_CHAIN_DESC1 scDesc;
@@ -194,8 +163,9 @@ namespace Kairos {
     }
 
 
-	bool DX12BackendInternal::Setup(IRenderBackendConfig* config) {
-        m_SwapChainCount = config->NumFrames;
+	bool DX12RenderBackend::Setup(ISystemConfig* config) {
+        IRenderBackendConfig* con = reinterpret_cast<IRenderBackendConfig*>(config);
+        m_SwapChainCount = con->NumFrames;
 
 
 #if defined(_DEBUG)
@@ -208,19 +178,8 @@ namespace Kairos {
         return true;
 	}
 
-    using namespace DX12BackendInternal;
-
-	bool DX12RenderBackend::Setup(ISystemConfig* config)
-	{
-		auto backendConfig = reinterpret_cast<IRenderBackendConfig*>(config);
-
-        DX12BackendInternal::Setup(backendConfig);
-		return true;
-	}
-
 	bool DX12RenderBackend::Init()
 	{
-        KRS_CORE_INFO(Math::numMipmapLevels(1024, 1024));
 
         std::string path = "Data/shaders/";
         KRS_CORE_INFO(Filesystem::PathExists(path));
@@ -239,16 +198,10 @@ namespace Kairos {
         m_RenderDevice->Flush();
         m_RenderDevice->Shutdown();
         m_SwapChain.reset();
-        m_RenderDevice.reset();
-#ifdef _DEBUG
-        {
-            ComPtr<IDXGIDebug1> dxgiDebug;
-            if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
-            {
-                dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-            }
-        }
-#endif
+       // m_RenderDevice.reset();
+        m_Adapter = nullptr;
+        m_AdapterOutput = nullptr;
+        m_debugInterface = nullptr;
 
 		return true;
 	}
@@ -257,6 +210,35 @@ namespace Kairos {
     {
         KRS_CORE_ASSERT(m_RenderDevice != nullptr, "IEWJFOWPIFEJ");
         return m_RenderDevice.get();
+    }
+
+    void DX12RenderBackend::Present()
+    {
+        m_RenderDevice->Present(m_SwapChain.get());
+    }
+
+    void DX12RenderBackend::BeginFrame()
+    {
+    }
+
+    void DX12RenderBackend::RenderScene(Scene& scene)
+    {
+        
+    }
+
+    Texture* DX12RenderBackend::GetCurrBackBuffer()
+    {
+        return m_SwapChain->GetBackBuffer(m_SwapChain->CurrBackBuffer());
+    }
+
+    Texture* DX12RenderBackend::GetDepthBuffer()
+    {
+        return m_SwapChain->GetDepthBuffer();
+    }
+
+    Uint32 DX12RenderBackend::GetCurrIndex() const
+    {
+        return m_SwapChain->CurrBackBuffer();
     }
 
 }

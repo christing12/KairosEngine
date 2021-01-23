@@ -1,10 +1,20 @@
-#pragma pack_matrix(row_major)
+#include "Vertex.hlsl"
+#include "Constants.hlsl"
 
-
-struct VertexInput
+struct SkyboxPass
 {
-    float3 position : POSITION;
+    uint indexBufferOffset;
+    uint vertexBufferOffset;
+    uint skyboxTextureIndex;
+    float4x4 skyboxViewProj;
 };
+
+#define PassDataType SkyboxPass
+
+#include "EntryPoint.hlsl"
+
+StructuredBuffer<Vertex> UnifiedVertexBuffer : register(t0);
+StructuredBuffer<uint> UnifiedIndexBuffer : register(t1);
 
 struct PixelInput
 {
@@ -12,45 +22,30 @@ struct PixelInput
     float3 direction : TEXCOORD;
 };
 
-
-struct SkyboxConstants {
-    float4x4 viewProjMat;
-};
-ConstantBuffer<SkyboxConstants> SkyboxCB : register(b0);
-
-
-TextureCube skybox : register(t0);
-SamplerState defaultSampler : register(s0);
-
-PixelInput main_vs(VertexInput input)
+PixelInput main_vs(uint indexID : SV_VertexID)
 {
+    uint index = UnifiedIndexBuffer[indexID + PassDataCB.indexBufferOffset];
+    Vertex vertex = UnifiedVertexBuffer[index + PassDataCB.vertexBufferOffset];
+    
     PixelInput output;
+    output.position = mul(float4(vertex.position, 1.0), PassDataCB.skyboxViewProj).xyww;
+    output.direction = vertex.position;
 
-    output.position = mul(float4(input.position, 1.0f), SkyboxCB.viewProjMat).xyww;
-    output.direction = input.position;
     return output;
+    
 }
-
-#define PI 3.14159265359f
-#define TWO_PI 6.28318530718f
-#define PI_OVER_TWO 1.5707963268f
-#define PI_SQUARED 9.86960440109f
 
 
 float2 SphericalSample(float3 v)
 {
     float2 uv = float2(atan2(v.z, v.x), asin(-v.y)); // sphereical to cartesian
-    uv /= float2(-TWO_PI, PI);
+    uv /= float2(-TwoPi, Pi);
     uv += float2(0.5, 0.5);  // converts from from [-0.5, 0.5] -> [0, 1]
     return uv;
 }
 
 float4 main_ps(PixelInput input) : SV_TARGET
 {
-   // float2 uv = SphericalSample(normalize(input.direction));
-    return skybox.Sample(defaultSampler, normalize(input.direction));
-    //sreturn float4(0.25f, 0.75f, 1.0f, 1.0f);
-    /*float3 envVector = normalize(input.direction);
-    return skybox.Sample(s1, envVector);*/
+    return TexturesCube[PassDataCB.skyboxTextureIndex].Sample(LinearClampSampler(), normalize(input.direction));
 }
 

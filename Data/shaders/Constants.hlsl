@@ -5,6 +5,9 @@ static const float QuarterPi = Pi * 0.25;
 static const float TwoPi = Pi * 2.0;
 static const float PiOver180 = Pi / 180.0;
 static const float FloatMax = 3.402823466e+38;
+static const float PiSquared = 9.86960440109f;
+
+
 static const uint U8Max = 255u;
 static const uint U9Max = 511u;
 static const uint U12Max = 4095u;
@@ -14,3 +17,9 @@ static const uint U32Max = 4294967295u;
 static const uint EntityMaskMeshInstance = 1 << 0;
 static const uint EntityMaskLight = 1 << 1;
 static const uint EntityMaskAll = 0xFFFFFFFF;
+
+
+static const float Epsilon = 0.00001;
+
+// Constant normal incidence Fresnel factor for all dielectrics.
+static const float3 Fdielectric = 0.04;

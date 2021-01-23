@@ -2,9 +2,9 @@
 #include "D3DWindowSurface.h"
 #include "WinWindowSystem.h"
 
-#include "Interface/IEngine.h"
+#include "Engine.h"
 
-extern Kairos::IEngine* g_Engine;
+extern Kairos::Engine* g_Engine;
 
 namespace Kairos {
 	namespace D3DWindowSurfaceInternal {

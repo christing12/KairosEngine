@@ -31,16 +31,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 
 	app->Run();
 	app->Shutdown();
-	
-//#if defined(_DEBUG)
-//	Microsoft::WRL::ComPtr<IDXGIDebug1> pDebug;
-//	auto hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug));
-//	KRS_CORE_ASSERT(SUCCEEDED(hr), "Issues");
-//	if (SUCCEEDED(hr)) {
-//		pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
-//	}
-//#endif
 	app.reset();
+
+#ifdef _DEBUG
+	{
+		Microsoft::WRL::ComPtr<IDXGIDebug1> dxgiDebug;
+		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug))))
+		{
+			dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_ALL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+		}
+	}
+#endif
 
 	return 0;
 

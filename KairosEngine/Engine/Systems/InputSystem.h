@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Interface/IInputSystem.h"
+#include <Core/EngineCore.h>
+#include <Core/BaseTypes.h>
+#include <Core/ClassTemplates.h>
 
 #include "Core/Events/Event.h"
 #include "Core/Events/KeyEvent.h"
@@ -11,20 +13,22 @@
 KRS_BEGIN_NAMESPACE(Kairos)
 
 
-class InputSystem : public IInputSystem {
+class InputSystem {
 public:
+	InputSystem() = default;
+	~InputSystem() = default;
 
-	virtual bool Setup(ISystemConfig* config) override final;
-	virtual bool Init() override final;
-	virtual bool Update() override final;
-	virtual bool Shutdown() override final;
+	bool Setup(struct ISystemConfig* config);
+	bool Init();
+	bool Update();
+	bool Shutdown();
 
 	void OnEvent(class Event& e);
 
 
-	virtual bool IsKeyDown(KeyCode keycode) override;
-	virtual bool IsMouseButtonDown(MouseCode mousecode) override;
-	virtual std::pair<float, float> GetMousePosition() override;
+	bool IsKeyDown(KeyCode keycode);
+	bool IsMouseButtonDown(MouseCode mousecode);
+	std::pair<float, float> GetMousePosition();
 
 private:
 	bool OnWindowClose(class WindowCloseEvent& e);

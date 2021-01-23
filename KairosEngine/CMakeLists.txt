@@ -48,56 +48,91 @@ source_group("Component" FILES ${KRS_COMPONENT_INC})
 
 
 set(KRS_GRAPHICS_CORE_INC
-    Buffer.h
-    BufferManager.h
-    CommandAllocatorPool.h
-    CommandContext.h
-    CommandQueue.h
-    DescriptorHeap.h
-    DynamicDescriptorHeap.h
-    Fence.h
-    GraphicsTypes.h
-    UploadResourceAllocator.h
-    Mesh.h
-    PipelineState.h
-    RenderDevice.h
-    Resource.h
-    RootSignature.h
-    Shader.h
-    SwapChain.h
-    Texture.h
     DX12RenderBackend.h
-    PipelineStateManager.h
-    RenderScene.h
-    ShaderCompiler.h
 )
 
 set(KRS_GRAPHICS_CORE_SRC
-    BufferManager.cpp
-    CommandAllocatorPool.cpp
-    CommandContext.cpp
-    CommandQueue.cpp
-    DescriptorHeap.cpp
-    DynamicDescriptorHeap.cpp
-    Fence.cpp
-    UploadResourceAllocator.cpp
-    Mesh.cpp
-    PipelineState.cpp
-    RenderDevice.cpp
-    RootSignature.cpp
-    Shader.cpp
-    SwapChain.cpp
-    Texture.cpp
     DX12RenderBackend.cpp
-    PipelineStateManager.cpp
-    RenderScene.cpp
-    ShaderCompiler.cpp
 )
 
 list(TRANSFORM KRS_GRAPHICS_CORE_INC PREPEND "Engine/RenderBackend/")
 list(TRANSFORM KRS_GRAPHICS_CORE_SRC PREPEND "Engine/RenderBackend/")
 source_group("Render Backend" FILES ${KRS_GRAPHICS_CORE_INC} ${KRS_GRAPHICS_CORE_SRC})
 
+
+set(RHI_INC
+    Buffer.h
+    BufferManager.h
+    CommandAllocatorPool.h
+    CommandContext.h
+    ContextManager.h
+    CommandQueue.h
+    Descriptor.h
+    DescriptorHeap.h
+    Fence.h
+    GPUResource.h
+    GraphicsTypes.h
+    PipelineState.h
+    PipelineStateManager.h
+    RenderDevice.h
+    ResourceFormat.h
+    RootSignature.h
+    Shader.h
+    ShaderCompiler.h
+    ShaderManager.h
+    SwapChain.h
+    Texture.h
+    TextureManager.h
+    UploadResourceAllocator.h
+)
+
+set(RHI_SRC
+    Buffer.cpp
+    BufferManager.cpp
+    CommandAllocatorPool.cpp
+    ContextManager.cpp
+    CommandContext.cpp
+    CommandQueue.cpp
+    Descriptor.cpp
+    DescriptorHeap.cpp
+    Fence.cpp
+    GPUResource.cpp
+    GraphicsTypes.cpp
+    PipelineState.cpp
+    PipelineStateManager.cpp
+    RenderDevice.cpp
+    ResourceFormat.cpp
+    RootSignature.cpp
+    ShaderCompiler.cpp
+    ShaderManager.cpp
+    SwapChain.cpp
+    Texture.cpp
+    TextureManager.cpp
+    UploadResourceAllocator.cpp
+)
+list(TRANSFORM RHI_INC PREPEND "Engine/RenderBackend/RHI/")
+list(TRANSFORM RHI_SRC PREPEND "Engine/RenderBackend/RHI/")
+source_group("Render Backend\\RHI" FILES ${RHI_INC} ${RHI_SRC})
+
+
+set(SCENE_INC
+    Scene.h
+    Lights.h
+    Mesh.h
+    Material.h
+    MeshComponent.h
+)
+
+set(SCENE_SRC
+    Scene.cpp
+    Lights.cpp
+    Mesh.cpp
+    Material.cpp
+    MeshComponent.cpp
+)
+list(TRANSFORM SCENE_INC PREPEND "Engine/RenderBackend/Scene/")
+list(TRANSFORM SCENE_SRC PREPEND "Engine/RenderBackend/Scene/")
+source_group("Render Backend\\Scene" FILES ${SCENE_INC} ${SCENE_SRC})
 
 
 set(KRS_EDITOR_INC
@@ -179,7 +214,6 @@ set(KRS_SYSTEM_INC
     D3DWindowSurface.h
     InputSystem.h
     GUISystem.h
-    CVarSystem.h
 )
 set(KRS_SYSTEM_SRC
     Engine.cpp
@@ -187,7 +221,6 @@ set(KRS_SYSTEM_SRC
     D3DWindowSurface.cpp
     InputSystem.cpp
     GUISystem.cpp
-    CVarSystem.cpp
 )
 list(TRANSFORM KRS_SYSTEM_INC PREPEND "Engine/Systems/")
 list(TRANSFORM KRS_SYSTEM_SRC PREPEND "Engine/Systems/")
@@ -202,7 +235,6 @@ set(KRS_SYSTEM_INTERFACE
     IWindowSystem.h
     IInputSystem.h
     IGUISystem.h
-    ICVarSystem.h
 )
 list(TRANSFORM KRS_SYSTEM_INTERFACE PREPEND "Engine/Systems/Interface/")
 source_group("Systems\\Interface" FILES ${KRS_SYSTEM_INTERFACE})
@@ -219,6 +251,8 @@ set(KRS_ALL_INC
     ${KRS_SYSTEM_INC}
     ${KRS_SYSTEM_INTERFACE}
     ${KRS_COMPONENT_INC}
+    ${RHI_INC}
+    ${SCENE_INC}
     
 )
 
@@ -230,6 +264,8 @@ set(KRS_ALL_SRC
     ${KRS_FRAMEWORK_SRC}
     ${KRS_UTIL_SRC}
     ${KRS_SYSTEM_SRC}
+    ${RHI_SRC}
+    ${SCENE_SRC}
 )
 
 add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
@@ -264,7 +300,7 @@ target_include_directories(${LIB_NAME}
 
 # ---------------- PRECOMPILED HEADERS -------------- #
 
-set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC} ${KRS_SYSTEM_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC} ${KRS_SYSTEM_SRC} ${RHI_SRC} ${SCENE_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )

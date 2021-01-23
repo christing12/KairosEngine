@@ -3,7 +3,7 @@
 #include "Core/EngineCore.h"
 #include "Core/ClassTemplates.h"
 
-#include "RenderBackend/GraphicsTypes.h"
+#include "RenderBackend/RHI/GraphicsTypes.h"
 
 #include "ISystem.h"
 

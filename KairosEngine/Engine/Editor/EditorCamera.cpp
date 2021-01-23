@@ -1,9 +1,10 @@
 #include "krspch.h"
 #include "EditorCamera.h"
+#include "Systems/Engine.h"
 #include "Systems/InputSystem.h"
-#include "Systems/Interface/IEngine.h"
 
-extern Kairos::IEngine* g_Engine;
+
+extern Kairos::Engine* g_Engine;
 
 namespace Kairos {
     EditorCamera::EditorCamera(const Matrix& projMat, Vector3 startPos)

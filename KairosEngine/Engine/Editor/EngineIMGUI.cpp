@@ -4,8 +4,8 @@
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
 
-#include "RenderBackend/RenderDevice.h"
-#include "RenderBackend/CommandContext.h"
+#include "RenderBackend/RHI/RenderDevice.h"
+#include "RenderBackend/RHI/CommandContext.h"
 
 namespace Kairos {
 	EngineIMGUI::EngineIMGUI(RenderDevice* pDevice, HWND hWnd)
@@ -29,11 +29,11 @@ namespace Kairos {
 		desc.NumDescriptors = 1024;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
-		auto hr = m_Device->GetD3DDevice()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_IMGUIHeap));
+		auto hr = m_Device->D3DDevice()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_IMGUIHeap));
 		KRS_CORE_ASSERT(SUCCEEDED(hr), "ISSUE WITH IMGUI HEAP");
 
 		ImGui_ImplWin32_Init(m_HWND);
-		ImGui_ImplDX12_Init(m_Device->GetD3DDevice(), 3, DXGI_FORMAT_R8G8B8A8_UNORM, m_IMGUIHeap.Get(), m_IMGUIHeap->GetCPUDescriptorHandleForHeapStart(),
+		ImGui_ImplDX12_Init(m_Device->D3DDevice(), 3, DXGI_FORMAT_R8G8B8A8_UNORM, m_IMGUIHeap.Get(), m_IMGUIHeap->GetCPUDescriptorHandleForHeapStart(),
 			m_IMGUIHeap->GetGPUDescriptorHandleForHeapStart());
 
 		InitColors();
@@ -53,7 +53,7 @@ namespace Kairos {
 		ImGui::Render();
 
 		context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_IMGUIHeap);
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), context.GetCommandList());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), context.D3DCommandList());
 
 	}
 	void EngineIMGUI::Shutdown()

@@ -1,30 +1,49 @@
 #pragma once
 
-#include "Interface/IEngine.h"
+//#include "Interface/IEngine.h
+
+#include <Core/EngineCore.h>
+#include <Core/BaseTypes.h>
+#include <Core/ClassTemplates.h>
+
+#include "GUISystem.h"
+#include "InputSystem.h"
+#include "RenderBackend/DX12RenderBackend.h"
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
-class Engine : public IEngine {
+class DX12RenderBackend;
+class WinWindowSystem;
+class EventSystem;
+class InputSystem;
+class GUISystem;
+
+
+class Engine {
 public:
-	virtual bool Setup(void* appHook, void* extraHook, char* cmdLine) override final;
-	virtual bool Init() override final;
+	bool Setup(void* appHook, void* extraHook, char* cmdLine);
+	bool Init();
 
-	virtual bool Update() override final;
-	virtual bool Shutdown() override final;
+	bool Update();
+	bool Shutdown();
 
-	virtual bool Run() override final;
-	virtual float GetDeltaTime() override final;
+	bool Run();
+	float GetDeltaTime();
 
-	virtual std::string GetName() override final;
+	std::string GetName();
 
 public:
-	virtual class DX12RenderBackend* GetRenderBackend() override final;
-	virtual class IWindowSystem* GetWindowSystem() override final;
-	virtual class IEventSystem* GetEventSystem() override final;
-	virtual class IInputSystem* GetInputSystem() override final;
-	virtual class IGUISystem* GetGUISystem() override final;
-	virtual class ICVarSystem* GetCVarSystem() override final;
-	virtual class RenderDevice* GetDevice() override final;
+	DX12RenderBackend* GetRenderBackend();
+	WinWindowSystem* GetWindowSystem();
+	InputSystem* GetInputSystem();
+	GUISystem* GetGUISystem();
+	class RenderDevice* GetDevice();
+
+private:
+	Scope<DX12RenderBackend> g_RenderBackend;
+	Scope<WinWindowSystem> g_WindowSystem;
+	Scope<InputSystem> g_InputSystem;
+	Scope<GUISystem> g_GUISystem;
 };
 
 KRS_END_NAMESPACE

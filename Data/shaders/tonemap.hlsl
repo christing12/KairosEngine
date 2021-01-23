@@ -1,3 +1,5 @@
+#include "EntryPoint.hlsl"
+
 static const float gamma = 2.2;
 static const float exposure = 1.0;
 static const float pureWhite = 1.0;
@@ -8,8 +10,13 @@ struct PixelShaderInput
 	float2 texCoord : TEXCOORD;
 };
 
-Texture2D sceneColor : register(t0);
-SamplerState defaultSampler : register(s0);
+
+struct RootConstants
+{
+	uint sceneColorTableIndex;
+};
+
+ConstantBuffer<RootConstants> RootConstants : register(b0);
 
 PixelShaderInput main_vs(uint vertexID : SV_VERTEXID)
 {
@@ -31,7 +38,7 @@ PixelShaderInput main_vs(uint vertexID : SV_VERTEXID)
 
 float4 main_ps(PixelShaderInput pin) : SV_TARGET0
 {
-	float3 color = sceneColor.Sample(defaultSampler, pin.texCoord).rgb * exposure;
+	float3 color = Textures2D[RootConstants.sceneColorTableIndex].Sample(LinearClampSampler(), pin.texCoord).rgb * exposure;
 
 
 	// Reinhard tonemapping operator.

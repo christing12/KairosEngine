@@ -3,7 +3,7 @@
 
 #include "Systems/Engine.h"
 
-#include "Systems/Interface/IWindowSystem.h"
+#include "Systems/WinWindowSystem.h"
 #include "Systems/InputSystem.h"
 
 #include "Core/Events/KeyEvent.h"

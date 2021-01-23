@@ -1,6 +1,6 @@
 	#pragma once
 
-#include <RenderBackend/DescriptorHeap.h>
+#include <RenderBackend/RHI/DescriptorHeap.h>
 
 namespace Kairos {
 	class RenderDevice;
@@ -18,7 +18,7 @@ namespace Kairos {
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_IMGUIHeap;
 		RenderDevice* m_Device;
 		HWND m_HWND;
-		DescriptorAllocation m_Allocation;
+		DescriptorRange m_Allocation;
 
 		void InitColors();
 	};

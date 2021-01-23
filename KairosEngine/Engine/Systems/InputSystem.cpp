@@ -26,7 +26,7 @@ namespace Kairos {
 
 	bool InputSystem::Setup(ISystemConfig* config)
 	{
-		auto systemConfig = reinterpret_cast<IInputConfig*>(config);
+	//	auto systemConfig = reinterpret_cast<IInputConfig*>(config);
 
 
 		return true;

@@ -4,9 +4,6 @@
 
 struct GlobalData
 {
-    float2 PipelineRTResolution;
-    float2 PipelineRTResolutionInv;
-
     uint AnisotropicClampSamplerIdx;
     uint LinearClampSamplerIdx;
     uint PointClampSamplerIdx;
@@ -17,14 +14,17 @@ struct GlobalData
 
 struct FrameData
 {
-    Camera CurrentFrameCamera;
-    Camera PreviousFrameCamera;
+    float4x4 ViewProjMat;
+    float3 EyePosition;
+    float padding;
+    //Camera CurrentFrameCamera;
+    //Camera PreviousFrameCamera;
 
-    bool IsDenoiserEnabled;
-    bool IsReprojectionHistoryDebugEnabled;
-    bool IsGradientDebugEnabled;
-    bool IsMotionDebugEnabled;
-    bool IsDenoiserAntilagEnabled;
+    //bool IsDenoiserEnabled;
+    //bool IsReprojectionHistoryDebugEnabled;
+    //bool IsGradientDebugEnabled;
+    //bool IsMotionDebugEnabled;
+    //bool IsDenoiserAntilagEnabled;
 };
 
 #define GlobalDataType GlobalData

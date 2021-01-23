@@ -1,19 +1,30 @@
 #pragma once
 
-
-#include "Interface/IGUISystem.h"
+#include <Core/BaseTypes.h>
+#include <Core/EngineCore.h>
+#include <Core/ClassTemplates.h>
 
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
-class GUISystem : public IGUISystem {
+class GUISystem {
 public:
-	virtual bool Setup(ISystemConfig* config) override;
-	virtual bool Init() override;
-	virtual bool Update() override;
-	virtual bool Shutdown() override;
+	GUISystem() = default;
+	~GUISystem() = default;
 
-	virtual void Render(class GraphicsContext& context) override;
+	bool Setup(struct ISystemConfig* config = nullptr);
+	bool Init();
+	bool Update();
+	bool Shutdown();
+
+	virtual void Render(class GraphicsContext& context);
+
+private:
+	void InitStyle();
+
+	bool m_ShowImGui = true;
+	std::function<void()> m_ShowImGuiFn;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_GUIHeap;
 };
 
 

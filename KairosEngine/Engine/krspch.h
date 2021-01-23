@@ -6,7 +6,6 @@
 #include "Core/EngineMath.h"
 #include "Core/Filesystem.h"
 #include "Core/ClassTemplates.h"
-#include "RenderBackend/GraphicsTypes.h"
 
 //
 #include <d3d12.h>
@@ -48,3 +47,4 @@ using namespace DirectX::SimpleMath;
 #include <unordered_set>
 #include <variant>
 #include <filesystem>
+#include <numeric>

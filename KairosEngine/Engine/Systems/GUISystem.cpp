@@ -1,39 +1,22 @@
 #include "krspch.h"
 #include "GUISystem.h"
 
-#include "Interface/IEngine.h"
+#include "Engine.h"
 #include "RenderBackend/DX12RenderBackend.h"
-#include "RenderBackend/RenderDevice.h"
+#include "RenderBackend/RHI/RenderDevice.h"
 #include "WinWindowSystem.h"
-#include "RenderBackend/CommandContext.h"
-
-#include "CVarSystem.h"
+#include "RenderBackend/RHI/CommandContext.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx12.h"
 #include "imgui/imgui_impl_win32.h"
 
 
-extern Kairos::IEngine* g_Engine;
+extern Kairos::Engine* g_Engine;
 
 namespace Kairos {
-	namespace GuiSystemInternal {
-		bool Setup(IGUISystemConfig* config);
-		bool Init();
-		bool Update();
-		bool Shutdown();
 
-		void Render(GraphicsContext& context);
-
-		bool m_ShowImGui = true;
-		std::function<void()> m_ShowImGuiFn;
-
-		ComPtr<ID3D12DescriptorHeap> m_GUIHeap;
-
-		void InitStyle();
-	}
-
-	bool GuiSystemInternal::Setup(IGUISystemConfig* config)
+	bool GUISystem::Setup(ISystemConfig* config)
 	{
 		m_ShowImGuiFn = [&]() {
 			m_ShowImGui = !m_ShowImGui;
@@ -41,7 +24,7 @@ namespace Kairos {
 
 		return true;
 	}
-	bool GuiSystemInternal::Init()
+	bool GUISystem::Init()
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -55,10 +38,11 @@ namespace Kairos {
 		desc.NumDescriptors = 1024;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
-		auto device = g_Engine->GetRenderBackend()->GetRenderDevice()->GetD3DDevice();
+		auto device = g_Engine->GetRenderBackend()->GetRenderDevice()->D3DDevice();
 
 		auto hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUIHeap));
 		KRS_CORE_ASSERT(SUCCEEDED(hr), "ISSUE WITH IMGUI HEAP");
+		m_GUIHeap->SetName(L"GUI Descriptor Heap");
 
 		HWND hwnd = reinterpret_cast<WinWindowSystem*>(g_Engine->GetWindowSystem())->GetHWND();
 		ImGui_ImplWin32_Init(hwnd);
@@ -69,12 +53,12 @@ namespace Kairos {
 		
 		return true;
 	}
-	bool GuiSystemInternal::Update()
+	bool GUISystem::Update()
 	{
 		return true;
 	}
 
-	void GuiSystemInternal::Render(GraphicsContext& context) {
+	void GUISystem::Render(GraphicsContext& context) {
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
@@ -83,23 +67,24 @@ namespace Kairos {
 		if (showDemo)
 			ImGui::ShowDemoWindow(&showDemo);
 
-		g_Engine->GetCVarSystem()->DrawImguiEditor();
+		//g_Engine->GetCVarSystem()->DrawImguiEditor();
 
 		ImGui::Render();
 		context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GUIHeap);
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), context.GetCommandList());
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), context.D3DCommandList());
 	}
 
-	bool GuiSystemInternal::Shutdown()
+	bool GUISystem::Shutdown()
 	{
 		ImGui_ImplDX12_Shutdown();
 		ImGui_ImplWin32_Shutdown();
+		m_GUIHeap = nullptr;
 
 		ImGui::DestroyContext();
 		return true;
 	}
 
-	void GuiSystemInternal::InitStyle() {
+	void GUISystem::InitStyle() {
 		ImVec4* colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -144,33 +129,5 @@ namespace Kairos {
 		colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
 		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	}
-
-
-	using namespace GuiSystemInternal;
-
-	bool GUISystem::Setup(ISystemConfig* config)
-	{
-		return GuiSystemInternal::Setup(reinterpret_cast<IGUISystemConfig*>(config));
-	}
-
-	bool GUISystem::Init()
-	{
-		return GuiSystemInternal::Init();
-	}
-
-	bool GUISystem::Update()
-	{
-		return GuiSystemInternal::Update();
-	}
-
-	bool GUISystem::Shutdown()
-	{
-		return GuiSystemInternal::Shutdown();
-	}
-
-	void GUISystem::Render(GraphicsContext& context) {
-		GuiSystemInternal::Render(context);
-	}
-
 }
 

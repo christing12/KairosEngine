@@ -40,6 +40,8 @@ Texture3D<uint4> UInt4_Textures3D[] : register(t0, space13);
 
 Texture2DArray   Texture2DArrays[]  : register(t0, space14);
 
+TextureCube TexturesCube[] : register(t0, space15);
+
 // UAV Raw and Typed boundless descriptor ranges
 RWTexture2D<float4>      RW_Float4_Textures2D[]       : register(u0, space10);
 RWTexture2D<uint4>       RW_UInt4_Textures2D[]        : register(u0, space11);

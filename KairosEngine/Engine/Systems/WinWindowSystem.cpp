@@ -1,7 +1,7 @@
 #include "krspch.h"
 #include "WinWindowSystem.h"
 
-#include "Interface/IEngine.h"
+#include "Engine.h"
 #include "D3DWindowSurface.h"
 #include "Core/Filesystem.h"
 
@@ -10,7 +10,7 @@
 #include "Core/Events/WindowEvent.h"
 
 #include "Interface/IRenderBackend.h"
-extern Kairos::IEngine* g_Engine;
+extern Kairos::Engine* g_Engine;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
