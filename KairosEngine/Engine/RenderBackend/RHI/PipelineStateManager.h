@@ -33,6 +33,7 @@ namespace Kairos {
 	struct ComputePiplineProxy {
 		std::string CSFile;
 		std::string RootSignatureName;
+		std::optional<std::string> EntryPoint = std::nullopt;
 	};
 
 	// for tricky lambda stuff

@@ -3,8 +3,8 @@
 #include "RenderDevice.h"
 
 namespace Kairos {
-	Buffer::Buffer(RenderDevice* pDevice, const BufferProperties& bufferProps, Kairos::ResourceState state)
-		: GPUResource{ pDevice, ResourceFormat{bufferProps, state}}
+	Buffer::Buffer(RenderDevice* pDevice, const BufferProperties& bufferProps, Kairos::ResourceState state, HeapType heapType)
+		: GPUResource{ pDevice, ResourceFormat{bufferProps, state}, heapType}
 		, m_Properties{ bufferProps }
 	{
 
@@ -49,6 +49,17 @@ namespace Kairos {
 		Map();
 	}
 
+	DynamicBuffer::DynamicBuffer(RenderDevice* pDevice, const BufferProperties& bufferProps)
+		: Buffer(pDevice, bufferProps, ResourceState::GenericRead, HeapType::Upload)
+	{
+		Map();
+	}
+
+	DynamicBuffer* DynamicBuffer::Create(RenderDevice* pDevice, const BufferProperties& props)
+	{
+		return nullptr;
+	}
+
 	DynamicBuffer::~DynamicBuffer()
 	{
 		Unmap();
@@ -68,6 +79,8 @@ namespace Kairos {
 			m_CPUPtr = nullptr;
 		}
 	}
+
+
 
 }
 

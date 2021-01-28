@@ -54,4 +54,19 @@ namespace Kairos {
         return Vector3::Transform(Vector3::Backward, GetOrientation());
     }
 
+    GPUCamera Camera::GetGPUStruct()
+    {
+        GPUCamera gpu;
+        gpu.Position = mPosition;
+        gpu.View = mViewMat;
+        gpu.ViewProjection = mViewMat * mProjectionMat;
+        gpu.Projection = mProjectionMat;
+        gpu.InverseProjection = mProjectionMat.Invert();
+        gpu.InverseView = mViewMat.Invert();
+        gpu.InverseViewProjection = gpu.ViewProjection.Invert();
+        
+
+        return gpu;
+    }
+
 }

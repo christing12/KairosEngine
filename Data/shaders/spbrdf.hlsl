@@ -1,9 +1,4 @@
-// Physically Based Rendering
-// Copyright (c) 2017-2018 Michał Siejak
-
-// Pre-integrates Cook-Torrance specular BRDF for varying roughness and viewing directions.
-// Results are saved into 2D LUT texture in the form of DFG1 and DFG2 split-sum approximation terms,
-// which act as a scale and bias to F0 (Fresnel reflectance at normal incidence) during rendering.
+#include "EntryPoint.hlsl"
 
 static const float PI = 3.141592;
 static const float TwoPI = 2 * PI;
@@ -12,7 +7,6 @@ static const float Epsilon = 0.001; // This program needs larger eps.
 static const uint NumSamples = 1024;
 static const float InvNumSamples = 1.0 / float(NumSamples);
 
-RWTexture2D<float2> LUT : register(u0);
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
@@ -32,20 +26,7 @@ float2 sampleHammersley(uint i)
 	return float2(i * InvNumSamples, radicalInverse_VdC(i));
 }
 
-// Importance sample GGX normal distribution function for a fixed roughness value.
-// This returns normalized half-vector between Li & Lo.
-// For derivation see: http://blog.tobias-franke.eu/2014/03/30/notes_on_importance_sampling.html
-float3 sampleGGX(float u1, float u2, float roughness)
-{
-	float alpha = roughness * roughness;
 
-	float cosTheta = sqrt((1.0 - u2) / (1.0 + (alpha*alpha - 1.0) * u2));
-	float sinTheta = sqrt(1.0 - cosTheta*cosTheta); // Trig. identity
-	float phi = TwoPI * u1;
-
-	// Convert to Cartesian upon return.
-	return float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
-}
 
 // Single term for separable Schlick-GGX below.
 float gaSchlickG1(float cosTheta, float k)
@@ -61,12 +42,44 @@ float gaSchlickGGX_IBL(float cosLi, float cosLo, float roughness)
 	return gaSchlickG1(cosLi, k) * gaSchlickG1(cosLo, k);
 }
 
+
+// Importance sample GGX normal distribution function for a fixed roughness value.
+// This returns normalized half-vector between Li & Lo.
+// For derivation see: http://blog.tobias-franke.eu/2014/03/30/notes_on_importance_sampling.html
+float3 sampleGGX(float u1, float u2, float roughness)
+{
+	float alpha = roughness * roughness;
+
+	float cosTheta = sqrt((1.0 - u2) / (1.0 + (alpha * alpha - 1.0) * u2));
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta); // Trig. identity
+	float phi = TwoPI * u1;
+
+	// Convert to Cartesian upon return.
+	return float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
+}
+
+
+
+
+
+
+
+
+
+
+struct RootConstants
+{
+	uint LUTTableIndex;
+};
+
+ConstantBuffer<RootConstants> RootConstantBuffer : register(b0);
+
 [numthreads(32, 32, 1)]
 void main(uint2 ThreadID : SV_DispatchThreadID)
 {
 	// Get output LUT dimensions.
 	float outputWidth, outputHeight;
-	LUT.GetDimensions(outputWidth, outputHeight);
+	RW_Float2_Textures2D[RootConstantBuffer.LUTTableIndex].GetDimensions(outputWidth, outputHeight);
 
 	// Get integration parameters.
 	float cosLo = ThreadID.x / outputWidth;
@@ -107,5 +120,5 @@ void main(uint2 ThreadID : SV_DispatchThreadID)
 		}
 	}
 
-	LUT[ThreadID] = float2(DFG1, DFG2) * InvNumSamples;
+	RW_Float2_Textures2D[RootConstantBuffer.LUTTableIndex][ThreadID] = float2(DFG1, DFG2) * InvNumSamples;
 }

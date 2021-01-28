@@ -69,7 +69,7 @@ namespace Kairos
 
 		
 		const D3D12_SUBRESOURCE_DATA subresourceData[] = {
-			{ static_cast<void*>(data), textureInfo.textureSize / tex->Height() }
+			{ static_cast<void*>(data), textureInfo.textureSize / tex->Height(), textureInfo.textureSize }
 		};
 
 		m_Device->TransientCommand([&](CommandContext& ctx) {

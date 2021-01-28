@@ -5,6 +5,11 @@
 #include "RHI/SwapChain.h"
 #include "Systems/Interface/IEngine.h"
 #include "Scene/Scene.h"
+#include "RenderPass.h"
+#include "ResourceStorage.h"
+#include "RHI/PipelineStateManager.h"
+#include "RHI/ShaderManager.h"
+
 
 extern Kairos::IEngine* g_Engine;
 
@@ -132,6 +137,10 @@ namespace Kairos {
 
         pdDevice->SetName(L"Logical Device");
         m_RenderDevice = CreateRef<RenderDevice>(pdDevice);
+        m_ResourceStorage = CreateScope<ResourceStorage>(m_RenderDevice.get());
+        m_ShaderManager = CreateScope<ShaderManager>(m_RenderDevice.get(), Filesystem::GetWorkingDirectory());
+        m_PipelineManager = CreateScope<PipelineStateManager>(m_RenderDevice.get(), m_ShaderManager.get());
+
         return true;
 
 
@@ -205,6 +214,24 @@ namespace Kairos {
 
 		return true;
 	}
+
+    void DX12RenderBackend::AddRenderPass(RenderPass* pass)
+    {
+        if (m_RenderPasses.find(pass->Name()) != m_RenderPasses.end()) {
+            KRS_CORE_ERROR("Render Pass with this name already exists");
+            return;
+        }
+
+        m_RenderPasses[pass->Name()] = pass;
+    }
+
+    void DX12RenderBackend::SetupRenderPasses()
+    {
+    }
+
+    void DX12RenderBackend::ExecuteRenderPasses()
+    {
+    }
 
     RenderDevice* DX12RenderBackend::GetRenderDevice()
     {

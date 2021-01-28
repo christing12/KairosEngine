@@ -7,6 +7,7 @@
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include "BufferManager.h"
+#include "RenderBackend/ResourceStorage.h"
 #include "PipelineStateManager.h"
 
 namespace Kairos {
@@ -32,6 +33,8 @@ namespace Kairos {
 		
 		m_OnlineCBV = OnlineCBVSRVUAVHeap(this, { 1000, 1000, 1000 });
 		m_OnlineSamplerHeap = OnlineSamplerHeap(this, 1000);
+
+
 	}
 
 	RenderDevice::~RenderDevice()
@@ -148,27 +151,6 @@ namespace Kairos {
 	RenderHandle RenderDevice::CreateTexture(Microsoft::WRL::ComPtr<ID3D12Resource>, const struct TextureProperties& props)
 	{
 		return RenderHandle{};
-	}
-
-	RenderHandle RenderDevice::CreateRootSignature(const std::string& name, std::function<void(RootSignatureProxy&)> fn)
-	{
-		return m_PSOManager->CreateRootSignature(name, fn).Handle;
-	}
-
-	RenderHandle RenderDevice::CreateGraphicsPSO(const std::string& name, std::function<void(struct GraphicsPipelineProxy&)> fn, bool compile)
-	{
-		PSOQueryResult result = m_PSOManager->CreateGraphicsPipelineState(name, fn);
-		if (compile)
-			result.Pipeline->Finalize();
-		return result.Handle;
-	}
-
-	RenderHandle RenderDevice::CreateComputePSO(const std::string& name, std::function<void(struct ComputePiplineProxy&)> fn, bool compile)
-	{
-		PSOQueryResult result = m_PSOManager->CreateComputePipelineState(name, fn);
-		if (compile)
-			result.Pipeline->Finalize();
-		return result.Handle;
 	}
 
 	Descriptor RenderDevice::CreateSampler(const D3D12_SAMPLER_DESC& desc)

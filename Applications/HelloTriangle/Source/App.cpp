@@ -46,16 +46,24 @@ bool App::Initialize()
 void App::Update()
 {
 	m_Scene.Update(0.01f);
-	mPerFrameConstants.ViewProjection = m_Scene.GetCamera().GetViewProjMat();
-	mPerFrameConstants.Position = m_Scene.GetCamera().GetPos();
+
+	mGlobalConstants.LinearClampSamplerIdx = linearSamplerHandle.Index();
+	mGlobalConstants.AnisotropicClampSamplerIdx = aniSamplerHandler.Index();
+	mGlobalConstants.MaxSamplerIdx = m_EnvMap.EnvTexture()->GetSRDescriptor().Index();
+
+	//mPerFrameConstants.ViewProjection = m_Scene.GetCamera().GetViewProjMat();
+	//mPerFrameConstants.Position = m_Scene.GetCamera().GetPos();
+	mPerFrameConstants.camera = m_Scene.GetCamera().GetGPUStruct();
+
 }
 
 void App::Render()
 {
 	/* PRE RENDER */
-	auto* device = g_Engine->GetRenderBackend()->GetRenderDevice();
+	auto device = g_Engine->GetRenderBackend()->GetRenderDevice();
 
-	mGlobalConstants.LinearClampSamplerIdx = linearSamplerHandle.Index();
+
+
 	device->SetGlobalRootConstant(mGlobalConstants);
 	device->SetFrameRootConstants(mPerFrameConstants);
 
@@ -64,36 +72,37 @@ void App::Render()
 
 	/* Render */
 	GraphicsContext& gfxContext = g_Engine->GetRenderBackend()->GetRenderDevice()->AllocateCommandContext(CommandType::Graphics).GetGraphicsContext();
+	gfxContext.SetScene(&m_Scene);
 	const FrameBuffer& frameBuffer = mFrameBuffers[m_Engine->GetRenderBackend()->GetCurrIndex()];
 
 	gfxContext.TransitionResource(*frameBuffer.ColorBuffer, ResourceState::RenderTarget, true);
 	gfxContext.SetRenderTargets(1, &frameBuffer.ColorBuffer->GetRTVDescriptor(0).CPUHandle(), frameBuffer.DepthBuffer->GetDSVDescriptor().CPUHandle());
 	gfxContext.ClearColor(*frameBuffer.ColorBuffer);
 	gfxContext.ClearDepth(*frameBuffer.DepthBuffer, D3D12_CLEAR_FLAG_DEPTH, 1.0, 0);
-
-
-
-	gfxContext.SetPipelineState("PBR");
 	gfxContext.SetViewportScissorRect(m_Viewport, m_Scissor);
 
+	{
+		SkyboxConstants instance{
+			m_Scene.GetCamera().GetViewRotMat() * m_Scene.GetCamera().GetProjMat(),
+			m_EnvMap.EnvTexture()->GetSRDescriptor().Index()
+		};
+		m_SkyboxPass.WriteData(instance);
+		m_SkyboxPass.Execute(gfxContext, *m_Engine->GetRenderBackend()->GetResourceStorage(), &instance, sizeof(SkyboxConstants));
+	}
 
-
-	m_Scene.Bind(gfxContext);
-	gfxContext.DrawInstanced(m_Scene.MergedMeshes()[0].Indices().size(), 1, 0, 0);
-
-	gfxContext.SetPipelineState("Skybox");
-	m_Scene.Bind(gfxContext);
-	SkyboxPass instance{
-		m_Scene.GetCamera().GetViewRotMat(),
-		m_Scene.MergedMeshes().back().TempLocation.firstIndex,
-		m_Scene.MergedMeshes().back().TempLocation.firstVert,
-		4
-	};
-	memcpy(m_SkyboxBuffer->DataPtr(), &instance, sizeof(SkyboxPass));
-	gfxContext.BindPassConstantBuffer(m_SkyboxBuffer->GPUVirtualAdress());
-	gfxContext.DrawInstanced(m_Scene.MergedMeshes().back().Indices().size(), 1, 0, 0);
+	{
+		GBufferPassConstants instance{ 
+			m_EnvMap.EnvTexture()->GetSRDescriptor().Index(),
+			m_EnvMap.IrradianceMap()->GetSRDescriptor().Index(),
+			m_EnvMap.SpecBRDF()->GetSRDescriptor().Index()
+		};
+		m_GBufferPass.WriteData(instance);
+		m_GBufferPass.Execute(gfxContext, *m_Engine->GetRenderBackend()->GetResourceStorage(), &instance, sizeof(GBufferPassConstants));
+	}
 
 	Texture* backBuffer = g_Engine->GetRenderBackend()->GetCurrBackBuffer();
+
+
 	gfxContext.TransitionResource(*frameBuffer.ColorBuffer, ResourceState::PixelAccess);
 	gfxContext.TransitionResource(*backBuffer, ResourceState::RenderTarget, true);
 	gfxContext.SetPipelineState("Tonemap");
@@ -125,7 +134,34 @@ bool App::OnEvent(Kairos::Event& e)
 
 void App::SetupResources() {
 
+	auto backend = g_Engine->GetRenderBackend();
+	auto device = backend->GetRenderDevice();
+	{
 
+		D3D12_SAMPLER_DESC linearSampler = {};
+		linearSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		linearSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		linearSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		linearSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		linearSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		linearSampler.MaxAnisotropy = 16;
+		linearSampler.MaxLOD = D3D12_FLOAT32_MAX;
+		linearSampler.MinLOD = 0.0f;
+		linearSampler.MipLODBias = 0.0f;
+		linearSamplerHandle = backend->GetRenderDevice()->CreateSampler(linearSampler);
+
+		D3D12_SAMPLER_DESC aniSampler = {};
+		aniSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		aniSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		aniSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		aniSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		aniSampler.Filter = D3D12_FILTER_ANISOTROPIC;
+		aniSampler.MaxAnisotropy = 15;
+		aniSampler.MaxLOD = D3D12_FLOAT32_MAX;
+		aniSampler.MinLOD = 0.0f;
+		aniSampler.MipLODBias = 0.0f;
+		aniSamplerHandler = backend->GetRenderDevice()->CreateSampler(aniSampler);
+	}
 
 
 	projectDir = Filesystem::GetRelativePath("C:/Users/Chris Ting/Desktop/MeshRenderer/Data/");
@@ -138,141 +174,45 @@ void App::SetupResources() {
 	m_Scissor = CD3DX12_RECT(0, 0, 1024, 1024);
 	m_Viewport = CD3DX12_VIEWPORT(0.f, 0.f, 1024, 1024, 0.f, 1.f);
 
-	auto backend = g_Engine->GetRenderBackend();
-	auto device = backend->GetRenderDevice();
-	backend->GetRenderDevice()->SetGlobalRootConstant(mGlobalConstants);
-	backend->GetRenderDevice()->SetFrameRootConstants(mPerFrameConstants);
+
+
+	{
+		mGlobalConstants.LinearClampSamplerIdx = linearSamplerHandle.Index();
+		mGlobalConstants.AnisotropicClampSamplerIdx = aniSamplerHandler.Index();
+		//mGlobalConstants.MaxSamplerIdx = m_EnvMap.EnvTexture()->GetSRDescriptor().Index();
+		backend->GetRenderDevice()->SetGlobalRootConstant(mGlobalConstants);
+		backend->GetRenderDevice()->SetFrameRootConstants(mPerFrameConstants);
+	}
+
 	m_Scene.Init(backend->GetRenderDevice());
 
 
 	m_Scene.AddMesh(Mesh::LoadFromAsset(backend->GetRenderDevice(), "Data/assets_export/cerberus.mesh"));
-	m_Scene.AddMesh(Mesh::LoadFromAsset(device, "Data/assets_export/skybox.mesh"));
+	//m_Scene.AddMesh(Mesh::LoadFromAsset(device, "Data/assets_export/skybox.mesh"));
 	m_Scene.AddMaterial(Material::LoadMatFromFolder(backend->GetRenderDevice(), "Data/textures/assets_export/", "cerberus"));
 	m_Scene.AddLight(Light{ Vector4::One, Vector3(-1, 0, 0) });
 	m_Scene.AddLight(Light{ Vector4::One, Vector3(1, 0, 0) });
 	m_Scene.AddLight(Light{ Vector4::One, Vector3(0, -1 , 0) });
 
 
-	// Tonemap Render Pass
-	backend->GetRenderDevice()->CreateRootSignature("Tonemap", [](RootSignatureProxy& sig)
-		{
-			sig.AddRootConstant(std::ceil(sizeof(Uint32) / 4.f), 0, 0);
-		});
-
-	backend->GetRenderDevice()->CreateGraphicsPSO("Tonemap", [&](GraphicsPipelineProxy& proxy)
-		{
-			proxy.VSFile = "tonemap.hlsl";
-			proxy.PSFile = "tonemap.hlsl";
-			proxy.RootSigName = "Tonemap";
-			proxy.DepthStencilState.DepthEnable = false;
-			proxy.DepthStencilFormat = DXGI_FORMAT_UNKNOWN;
-			proxy.RenderTargetFormats = {
-				DXGI_FORMAT_R8G8B8A8_UNORM,
-			};
-		});
-
-
-	// PBR Render Pass
-	backend->GetRenderDevice()->CreateRootSignature("Base", [](RootSignatureProxy& sig)
-		{
-			//sig.AddRootConstant(std::ceil(sizeof(Uint32) / 4.f), 0, 0);
-			sig.AddSRParam(0, 0);
-			sig.AddSRParam(1, 0);
-			sig.AddSRParam(2, 0);
-			sig.AddSRParam(3, 0);
-		});
-
-	backend->GetRenderDevice()->CreateGraphicsPSO("PBR", [&](GraphicsPipelineProxy& proxy)
-		{
-			proxy.VSFile = "test.hlsl";
-			proxy.PSFile = "test.hlsl";
-			proxy.RootSigName = "Base";
-			proxy.DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			proxy.RenderTargetFormats = {
-				DXGI_FORMAT_R16G16B16A16_FLOAT,
-			};
-			//proxy.InputLayout = D3D12_INPUT_LAYOUT_DESC{ PBRLayout, _countof(PBRLayout) };
-		});
-
-
-
-
-
-	device->CreateRootSignature("Skybox", [](RootSignatureProxy& sig)
-		{
-			sig.AddSRParam(0, 0);
-			sig.AddSRParam(1, 0);
-		});
-
-
-	device->CreateGraphicsPSO("Skybox", [](GraphicsPipelineProxy& proxy)
-		{
-			proxy.VSFile = "skybox.hlsl";
-			proxy.PSFile = "skybox.hlsl";
-			proxy.RootSigName = "Skybox";
-			proxy.DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			proxy.RenderTargetFormats = {
-				DXGI_FORMAT_R16G16B16A16_FLOAT,
-			};
-			proxy.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-			proxy.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		});
-
-
-	// EquirectToCube
-	backend->GetRenderDevice()->CreateRootSignature("Default", [](RootSignatureProxy& proxy){});
-
-	backend->GetRenderDevice()->CreateComputePSO("Equirect2Cube", [](ComputePiplineProxy& proxy)
-		{
-			proxy.CSFile = "equirect2cube.hlsl";
-			proxy.RootSignatureName = "Default";
-		}, true);
-
-	envTexture = device->CreateTexture(TextureProperties(1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT, TextureType::Tex2D, 6), ResourceState::UnorderedAccess);
-
-	unfilteredEnv = device->CreateTexture(TextureProperties(1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT, TextureType::Tex2D, 6), ResourceState::UnorderedAccess);
-	Texture* equirectTex = device->CreateTexture("Data/textures/assets_export/environment.tx", DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 1);
-
-	device->TransientCommand([&](CommandContext& ctx)
-		{
-			struct EquiStruct {
-				Uint32 inputTextureIndex;
-				Uint32 outputTextureIndex;
-			};
-			EquiStruct instance{ equirectTex->GetUAVDescriptor(0).Index(), unfilteredEnv->GetSRDescriptor().Index() };
-
-			DynamicBuffer* constants = reinterpret_cast<DynamicBuffer*>(device->CreateDynConstBuffer(sizeof(EquiStruct), sizeof(EquiStruct)));
-			memcpy(constants->DataPtr(), &instance, sizeof(instance));
-
-			auto& computeCtx = ctx.GetComputeContext();
-			computeCtx.SetPipelineState("Equirect2Cube");
-			computeCtx.BindPassConstantBuffer(constants->GPUVirtualAdress());
-			computeCtx.Dispatch(envTexture->Width() / 32, envTexture->Height() / 32, 6);
-		}, CommandType::Compute);
 	
+	m_TonemapPass.Setup(device, backend->PipelineManager());
+	m_GBufferPass.Setup(device, backend->PipelineManager());
+	m_SkyboxPass.Setup(device, backend->PipelineManager());
 
-	m_SkyboxBuffer = reinterpret_cast<DynamicBuffer*>(device->CreateDynConstBuffer(sizeof(SkyboxPass), sizeof(SkyboxPass)));
+	m_EnvMap.Init(device, backend->PipelineManager());
+	//
 
-
-	backend->GetRenderDevice()->CompileAll();
-
-
-
-	D3D12_SAMPLER_DESC linearSampler = {};
-	linearSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	linearSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	linearSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	linearSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	linearSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	linearSampler.MaxAnisotropy = 16;
-	linearSampler.MaxLOD = D3D12_FLOAT32_MAX;
-	linearSampler.MinLOD = 0.0f;
-	linearSampler.MipLODBias = 0.0f;
-	linearSamplerHandle = backend->GetRenderDevice()->CreateSampler(linearSampler);
-	
+	//m_SkyboxBuffer = reinterpret_cast<DynamicBuffer*>(device->CreateDynConstBuffer(sizeof(SkyboxPass), sizeof(SkyboxPass)));
 
 
-	m_Scene.UploadMeshes();
-	m_Scene.UploadMaterials();
-	m_Scene.UploadLights();
+	backend->PipelineManager()->CompileAll();
+
+
+
+
+
+	m_Scene.GPUStorage()->UploadMeshes();
+	m_Scene.GPUStorage()->UploadMaterials();
+	m_Scene.GPUStorage()->UploadLights();
 }

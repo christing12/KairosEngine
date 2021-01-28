@@ -3,7 +3,8 @@ struct EquiStruct {
 	uint outputTextureIndex;
 };
 
-#define PassDataType EquiStruct
+ConstantBuffer<EquiStruct> passConstant : register(b0);
+//#define PassDataType EquiStruct
 
 #include "EntryPoint.hlsl"
 
@@ -18,10 +19,10 @@ static const float TwoPI = 2 * PI;
 float3 getSamplingVector(uint3 ThreadID)
 {
 	float outputWidth, outputHeight, outputDepth;
-	RW_Float4_Texture2DArrays[PassDataCB.outputTextureIndex].GetDimensions(outputWidth, outputHeight, outputDepth);
+	RW_Float4_Texture2DArrays[passConstant.outputTextureIndex].GetDimensions(outputWidth, outputHeight, outputDepth);
 
 	float2 st = ThreadID.xy / float2(outputWidth, outputHeight);
-	float2 uv = 2.0 * float2(st.x, 1.0 - st.y) - float2(1.0, 1.0);
+	float2 uv = 2.0 * float2(st.x, 1.0 - st.y) - float2(1.0, 1.0); // converts from [0, 1] range to [-1, 1] range
 
 	// Select vector based on cubemap face index.
 	float3 ret;
@@ -37,6 +38,7 @@ float3 getSamplingVector(uint3 ThreadID)
 	return normalize(ret);
 }
 
+// z Index of ThreadID corresponds to cube face
 [numthreads(32, 32, 1)]
 void main(uint3 ThreadID : SV_DispatchThreadID)
 {
@@ -47,8 +49,9 @@ void main(uint3 ThreadID : SV_DispatchThreadID)
 	float theta = acos(v.y);
 
 	// Sample equirectangular texture.
-	float4 color = Textures2D[PassDataCB.inputTextureIndex].SampleLevel(LinearClampSampler(), float2(phi / TwoPI, theta / PI), 0);
+	float4 color = Textures2D[passConstant.outputTextureIndex].SampleLevel(AnisotropicClampSampler(), float2(phi / TwoPI, theta / PI), 0);
+
 
 	// Write out color to output cubemap.
-	RW_Float4_Texture2DArrays[PassDataCB.outputTextureIndex][ThreadID] = color;
+	RW_Float4_Texture2DArrays[passConstant.outputTextureIndex][ThreadID] = color;
 }

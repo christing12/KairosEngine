@@ -35,6 +35,8 @@ namespace Kairos {
 		void SetRootSignature(RootSignature* signature);
 		void SetVertexShader(Shader* vertexShader);
 		void SetPixelShader(Shader* pixelShader);
+		void SetHullShader(Shader* hullShader);
+		void SetDomainShader(Shader* domainShader);
 		void SetInputLayout(const D3D12_INPUT_LAYOUT_DESC& layoutDesc);
 		void SetRenderTargets(Uint32 numRTV, const DXGI_FORMAT* formats, DXGI_FORMAT dsvFormat);
 		void SetRenderTarget(DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat);

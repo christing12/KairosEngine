@@ -77,6 +77,11 @@ namespace Math
         return levels;
     }
 
+    template<typename T> static constexpr bool isPowerOfTwo(T value)
+    {
+        return value != 0 && (value & (value - 1)) == 0;
+    }
+
     /***************************************************************************
     * These functions were taken from the MiniEngine.
     * Source code available here:

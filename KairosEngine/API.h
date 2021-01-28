@@ -13,9 +13,10 @@
 
 #include "Engine/Editor/EngineIMGUI.h"
 #include "Engine/Editor/EditorCamera.h"
-#include "Engine/Framework/Camera.h"
+
 
 #include "Engine/RenderBackend/RHI/GraphicsTypes.h"
+#include "Engine/RenderBackend/RHI/Descriptor.h"
 #include "Engine/RenderBackend/RHI/Buffer.h"
 #include "Engine/RenderBackend/RHI/CommandContext.h"
 #include "Engine/RenderBackend/RHI/DescriptorHeap.h"
@@ -27,11 +28,12 @@
 #include "Engine/RenderBackend/RHI/SwapChain.h"
 #include "Engine/RenderBackend/RHI/Texture.h"
 
+#include "Engine/Scene/Scene.h"
+#include "Engine/Scene/SceneGPUStorage.h"
 
-#include "Engine/RenderBackend/Scene/Scene.h"
-#include "Engine/RenderBackend/Scene/Mesh.h"
-#include "Engine/RenderBackend/Scene/MeshComponent.h"
-#include "Engine/RenderBackend/Scene/Material.h"
+#include "Engine/Scene/Mesh.h"
+#include "Engine/Scene/MeshComponent.h"
+#include "Engine/Scene/Material.h"
 
 //#include "Engine/RenderBackend/RenderScene.h"
 
@@ -45,3 +47,8 @@
 #include "Engine/Systems/Engine.h"
 
 
+#include "Engine/RenderBackend/RenderPasses/GBufferPass.h"
+
+#include "Engine/RenderBackend/RenderPasses/TonemapPass.h"
+#include "Engine/RenderBackend/RenderPasses/EnvironmentMap.h"
+#include "Engine/RenderBackend/RenderPasses/SkyboxPass.h"

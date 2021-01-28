@@ -5,7 +5,6 @@ set(LIB_NAME KairosEngine)
 project(${LIB_NAME} LANGUAGES CXX)
 
 set(KRS_CORE_INC
-    Engine/Core/Application.h
     Engine/Core/BaseTypes.h
     Engine/Core/EngineCore.h
     Engine/Core/EngineMath.h
@@ -20,7 +19,6 @@ set(KRS_CORE_INC
 
 set(KRS_CORE_SRC
     Engine/Core/Log.cpp
-    Engine/Core/Application.cpp
     Engine/Core/Filesystem.cpp
     Engine/Core/ApplicationEntry.cpp
 )
@@ -49,10 +47,14 @@ source_group("Component" FILES ${KRS_COMPONENT_INC})
 
 set(KRS_GRAPHICS_CORE_INC
     DX12RenderBackend.h
+    RenderPass.h
+    ResourceStorage.h
 )
 
 set(KRS_GRAPHICS_CORE_SRC
     DX12RenderBackend.cpp
+    RenderPass.cpp
+    ResourceStorage.cpp
 )
 
 list(TRANSFORM KRS_GRAPHICS_CORE_INC PREPEND "Engine/RenderBackend/")
@@ -115,7 +117,20 @@ list(TRANSFORM RHI_SRC PREPEND "Engine/RenderBackend/RHI/")
 source_group("Render Backend\\RHI" FILES ${RHI_INC} ${RHI_SRC})
 
 
+set(PASSES_INC
+    TonemapPass.h
+)
+
+set(PASSES_SRC
+    TonemapPass.cpp
+)
+list(TRANSFORM PASSES_INC PREPEND "Engine/RenderBackend/RenderPasses/")
+list(TRANSFORM PASSES_SRC PREPEND "Engine/RenderBackend/RenderPasses/")
+source_group("Render Backend\\Render Passes" FILES ${PASSES_INC} ${PASSES_SRC})
+
+
 set(SCENE_INC
+    Camera.h
     Scene.h
     Lights.h
     Mesh.h
@@ -124,15 +139,16 @@ set(SCENE_INC
 )
 
 set(SCENE_SRC
+    Camera.cpp
     Scene.cpp
     Lights.cpp
     Mesh.cpp
     Material.cpp
     MeshComponent.cpp
 )
-list(TRANSFORM SCENE_INC PREPEND "Engine/RenderBackend/Scene/")
-list(TRANSFORM SCENE_SRC PREPEND "Engine/RenderBackend/Scene/")
-source_group("Render Backend\\Scene" FILES ${SCENE_INC} ${SCENE_SRC})
+list(TRANSFORM SCENE_INC PREPEND "Engine/Scene/")
+list(TRANSFORM SCENE_SRC PREPEND "Engine/Scene/")
+source_group("Scene" FILES ${SCENE_INC} ${SCENE_SRC})
 
 
 set(KRS_EDITOR_INC
@@ -157,6 +173,13 @@ set(KRS_CORE_SHADERS
     EngineMain.hlsl
     Camera.hlsl
     test.hlsl
+    equirect2cube.hlsl
+    irmap.hlsl
+    Lighting.hlsl
+    skybox.hlsl
+    spbrdf.hlsl
+    tonemap.hlsl
+    Vertex.hlsl
 )
 
 
@@ -176,22 +199,6 @@ set(KRS_GENERAL_SRC
     Engine/krspch.cpp
 )
 source_group(" " FILES ${KRS_GENERAL_INC} ${KRS_GENERAL_SRC})
-
-
-
-
-set(KRS_FRAMEWORK_INC
-    Scene.h
-    Camera.h
-
-)
-set(KRS_FRAMEWORK_SRC
-    Scene.cpp
-    Camera.cpp
-)
-list(TRANSFORM KRS_FRAMEWORK_INC PREPEND "Engine/Framework/")
-list(TRANSFORM KRS_FRAMEWORK_SRC PREPEND "Engine/Framework/")
-source_group("Framework" FILES ${KRS_FRAMEWORK_INC} ${KRS_FRAMEWORK_SRC})
 
 
 set(KRS_UTIL_INC
@@ -246,14 +253,13 @@ set(KRS_ALL_INC
     ${KRS_GRAPHICS_CORE_INC}
     ${KRS_CORE_SHADERS}
     ${KRS_EDITOR_INC}
-    ${KRS_FRAMEWORK_INC}
     ${KRS_UTIL_INC}
     ${KRS_SYSTEM_INC}
     ${KRS_SYSTEM_INTERFACE}
     ${KRS_COMPONENT_INC}
     ${RHI_INC}
     ${SCENE_INC}
-    
+    ${PASSES_INC}
 )
 
 set(KRS_ALL_SRC
@@ -261,11 +267,11 @@ set(KRS_ALL_SRC
     ${KRS_CORE_SRC}
     ${KRS_GRAPHICS_CORE_SRC}
     ${KRS_EDITOR_SRC}
-    ${KRS_FRAMEWORK_SRC}
     ${KRS_UTIL_SRC}
     ${KRS_SYSTEM_SRC}
     ${RHI_SRC}
     ${SCENE_SRC}
+    ${PASSES_SRC}
 )
 
 add_library(${LIB_NAME} STATIC ${KRS_ALL_INC} ${KRS_ALL_SRC})
@@ -300,7 +306,7 @@ target_include_directories(${LIB_NAME}
 
 # ---------------- PRECOMPILED HEADERS -------------- #
 
-set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_FRAMEWORK_SRC} ${KRS_UTIL_SRC} ${KRS_SYSTEM_SRC} ${RHI_SRC} ${SCENE_SRC}
+set_source_files_properties(${SRC} ${KRS_CORE_SRC} ${KRS_GRAPHICS_CORE_SRC} ${KRS_EDITOR_SRC} ${KRS_UTIL_SRC} ${KRS_SYSTEM_SRC} ${RHI_SRC} ${SCENE_SRC} ${PASSES_SRC}
     PROPERTIES 
         COMPILE_FLAGS /Yu"krspch.h"
 )

@@ -8,10 +8,6 @@ namespace Kairos {
 		, indexInRange(index)
 	{}
 
-	Descriptor::~Descriptor()
-	{
-	}
-
 	DescriptorRange::DescriptorRange()
 		: m_CPUHandle{ 0 }
 		, m_GPUHandle{ 0 }

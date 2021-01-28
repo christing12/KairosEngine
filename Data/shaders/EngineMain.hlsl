@@ -51,6 +51,7 @@ RWTexture3D<float4>      RW_Float4_Textures3D[]       : register(u0, space13);
 RWTexture3D<uint4>       RW_UInt4_Textures3D[]        : register(u0, space14);
 
 RWTexture2DArray<float4> RW_Float4_Texture2DArrays[]  : register(u0, space15);
+RWTexture2D<float2> RW_Float2_Textures2D[] : register(u0, space16);
 
 // Static samplers
 SamplerState Samplers[] : register(s0, space10);
@@ -61,7 +62,7 @@ struct ReadBackData
     float Value;
 };
 
-RWStructuredBuffer<ReadBackData> DebugReadbackBuffer : register(u0, space16);
+RWStructuredBuffer<ReadBackData> DebugReadbackBuffer : register(u0, space17);
 
 static uint DebugBufferWriteIndex = 1;
 

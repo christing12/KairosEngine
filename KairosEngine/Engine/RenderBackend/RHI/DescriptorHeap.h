@@ -77,6 +77,12 @@ public:
 	inline DescriptorType HeapType() const { return m_Type; }
 };
 
+
+
+
+
+
+
 // paged free list allocator
 class OfflineDescriptorAllocator {
 public:
@@ -211,6 +217,29 @@ private:
 };
 
 
+
+
+class PoolDescriptorAllocator {
+public:
+	struct Desc {
+		Desc() = default;
+		Desc(const std::vector<Uint32> rangeCounts, bool shaderVisible = false);
+		Desc& SetRangeCount(DescriptorType type, Uint32 count);
+		Desc& SetShaderVisible(bool isVisible);
+	private:
+		bool isShaderVisible = false;
+		// how many descriptors of each type can be allocated in their respective heaps
+		Uint32 m_DescriptorRangeCount[(Uint32)DescriptorType::Count] = { 0 };
+	};
+
+	PoolDescriptorAllocator() = default;
+	PoolDescriptorAllocator(const PoolDescriptorAllocator::Desc& desc);
+
+
+private:
+	RenderDevice* m_Device;
+	PoolDescriptorAllocator::Desc& m_Desc;
+};
 
 
 

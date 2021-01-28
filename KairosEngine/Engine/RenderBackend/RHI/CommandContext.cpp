@@ -7,6 +7,10 @@
 #include "BufferManager.h"
 #include "Texture.h"
 #include "PipelineStateManager.h"
+#include "Systems/Engine.h"
+
+// TODO: REMOVE THIS ITS TEMP
+extern Kairos::Engine* g_Engine;
 
 namespace Kairos {
     CommandContext::CommandContext(RenderDevice* pDevice, CommandType type)
@@ -31,14 +35,18 @@ namespace Kairos {
     }
 
 
+    void CommandContext::SetScene(Scene* scene)
+    {
+        m_Scene = scene;
+    }
+
     void CommandContext::TransitionResource(GPUResource& resource, ResourceState newState, bool flushImmediate)
     {
         
         D3D12_RESOURCE_STATES oldState = D3DResourceStates(resource.ResourceState());
         if (resource.ResourceState() != newState) {
             D3D12_RESOURCE_BARRIER& barrier = m_ResourceBarriers[m_BarriersToFlush++];
-            barrier = CD3DX12_RESOURCE_BARRIER::Transition
-            (resource.D3DResource(), oldState, D3DResourceStates(newState));
+            barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.D3DResource(), oldState, D3DResourceStates(newState));
             resource.SetResourceState(newState);
         }
 
@@ -80,6 +88,30 @@ namespace Kairos {
 
         m_dCommandList->CopyBufferRegion(buffer.D3DResource(),
             buffer.Offset() + destOffset, dynAlloc.Resource.Get(), 0, sizeInBytes);
+    }
+
+    void CommandContext::CopyResource(GPUResource& dest, GPUResource& src)
+    {
+        m_dCommandList->CopyResource(dest.D3DResource(), src.D3DResource());
+    }
+
+    //TODO: Make it 
+    void CommandContext::CopyTextureRegion(Texture* dest, Texture* src, Uint32 x, Uint32 y, Uint32 z)
+    {
+
+        KRS_CORE_ASSERT(dest->Depth() == src->Depth(), "Incompatiable number of array slices (depth)");
+        TransitionResource(*dest, ResourceState::CopyDest);
+        TransitionResource(*src, ResourceState::CopySrc, true);
+        for (Uint32 arraySlice = 0; arraySlice < dest->Depth(); ++arraySlice)
+        {
+            const UINT subresourceIndex = D3D12CalcSubresource(0, arraySlice, 0, dest->MipLevels() , 6);
+            m_dCommandList->CopyTextureRegion(
+                &CD3DX12_TEXTURE_COPY_LOCATION(dest->D3DResource(), subresourceIndex),
+                x, y, z,
+                &CD3DX12_TEXTURE_COPY_LOCATION(src->D3DResource(), subresourceIndex),
+                nullptr
+            );
+        }
     }
 
 
@@ -290,7 +322,7 @@ namespace Kairos {
 
     void GraphicsContext::SetPipelineState(const std::string name)
     {
-        Kairos::PSOQueryResult result = m_Device->m_PSOManager->GetPipelineState(name);
+        Kairos::PSOQueryResult result = g_Engine->GetRenderBackend()->PipelineManager()->GetPipelineState(name);
 
 
         m_CurrPSO = result.Pipeline;
@@ -304,7 +336,7 @@ namespace Kairos {
 
     void GraphicsContext::BindCommonResources(RootSignature* rootSig)
     {
-        Uint32 commonParamOffset = rootSig->NumParameters() - m_Device->m_PSOManager->NumCommonRootParamters();
+        Uint32 commonParamOffset = rootSig->NumParameters() - g_Engine->GetRenderBackend()->PipelineManager()->NumCommonRootParamters();
         
         Descriptor desc = m_Device->m_OnlineCBV.GetStart();
         D3D12_GPU_DESCRIPTOR_HANDLE SRVRangeStart = m_Device->m_OnlineCBV.RangeStart(OnlineDescriptorHeap::Range::SRV).GPUHandle();
@@ -317,16 +349,17 @@ namespace Kairos {
         m_dCommandList->SetGraphicsRootDescriptorTable(5 + commonParamOffset, SRVRangeStart);
         m_dCommandList->SetGraphicsRootDescriptorTable(6 + commonParamOffset, SRVRangeStart);
         m_dCommandList->SetGraphicsRootDescriptorTable(7 + commonParamOffset, SRVRangeStart);
-
         m_dCommandList->SetGraphicsRootDescriptorTable(8 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(9 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(10 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(11 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(12 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(13 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetGraphicsRootDescriptorTable(14 + commonParamOffset, SRVRangeStart);
 
-        m_dCommandList->SetGraphicsRootDescriptorTable(15 + commonParamOffset, SamplerRangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(9 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(10 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(11 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(12 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(13 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(14 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetGraphicsRootDescriptorTable(15 + commonParamOffset, UARangeStart);
+
+        m_dCommandList->SetGraphicsRootDescriptorTable(16 + commonParamOffset, SamplerRangeStart);
 
         m_dCommandList->SetGraphicsRootConstantBufferView(commonParamOffset, m_Device->GlobalBuffer()->GPUVirtualAdress());
         m_dCommandList->SetGraphicsRootConstantBufferView(commonParamOffset + 1, m_Device->PerFrameBuffer()->GPUVirtualAdress());
@@ -334,7 +367,7 @@ namespace Kairos {
 
     void GraphicsContext::BindPassConstantBuffer(D3D12_GPU_VIRTUAL_ADDRESS address)
     {
-        Uint32 commonParamOffset = m_CurrRootSig->NumParameters() - m_Device->m_PSOManager->NumCommonRootParamters();
+        Uint32 commonParamOffset = m_CurrRootSig->NumParameters() - g_Engine->GetRenderBackend()->PipelineManager()->NumCommonRootParamters();
         m_dCommandList->SetGraphicsRootConstantBufferView(2 + commonParamOffset, address);
 
     }
@@ -385,6 +418,12 @@ namespace Kairos {
         m_dCommandList->SetComputeRootDescriptorTable(rootIndex, startGPUHandle);
     }
 
+    void ComputeContext::SetRootConstants(Uint32 rootIdx, Uint32 space, Uint32 numConstants, CPVoid data)
+    {
+        auto index = m_CurrRootSig->GetParameterIndex({ rootIdx, space, ShaderRegister::ConstantBuffer });
+        m_dCommandList->SetComputeRoot32BitConstants(index.value().index, numConstants, data, 0);
+    }
+
     void ComputeContext::Dispatch(Uint32 groupCountX, Uint32 groupCountY, Uint32 groupCountZ)
     {
         FlushResourceBarriers();;
@@ -395,7 +434,7 @@ namespace Kairos {
 
     void ComputeContext::SetPipelineState(const std::string name)
     {
-        Kairos::PSOQueryResult result = m_Device->m_PSOManager->GetPipelineState(name);
+        Kairos::PSOQueryResult result = g_Engine->GetRenderBackend()->PipelineManager()->GetPipelineState(name);
 
         m_CurrPSO = result.Pipeline;
         m_dCommandList->SetPipelineState(m_CurrPSO->GetPipelineState());
@@ -407,7 +446,7 @@ namespace Kairos {
 
     void ComputeContext::BindCommonResources(RootSignature* rootSig)
     {
-        Uint32 commonParamOffset = rootSig->NumParameters() - m_Device->m_PSOManager->NumCommonRootParamters();
+        Uint32 commonParamOffset = rootSig->NumParameters() - g_Engine->GetRenderBackend()->PipelineManager()->NumCommonRootParamters();
 
         Descriptor desc = m_Device->m_OnlineCBV.GetStart();
         D3D12_GPU_DESCRIPTOR_HANDLE SRVRangeStart = m_Device->m_OnlineCBV.RangeStart(OnlineDescriptorHeap::Range::SRV).GPUHandle();
@@ -421,14 +460,16 @@ namespace Kairos {
         m_dCommandList->SetComputeRootDescriptorTable(6 + commonParamOffset, SRVRangeStart);
         m_dCommandList->SetComputeRootDescriptorTable(7 + commonParamOffset, SRVRangeStart);
         m_dCommandList->SetComputeRootDescriptorTable(8 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(9 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(10 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(11 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(12 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(13 + commonParamOffset, SRVRangeStart);
-        m_dCommandList->SetComputeRootDescriptorTable(14 + commonParamOffset, SRVRangeStart);
 
-        m_dCommandList->SetComputeRootDescriptorTable(15 + commonParamOffset, SamplerRangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(9 + commonParamOffset,  UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(10 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(11 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(12 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(13 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(14 + commonParamOffset, UARangeStart);
+        m_dCommandList->SetComputeRootDescriptorTable(15 + commonParamOffset, UARangeStart);
+
+        m_dCommandList->SetComputeRootDescriptorTable(16 + commonParamOffset, SamplerRangeStart);
 
         // global CBV
         m_dCommandList->SetComputeRootConstantBufferView(commonParamOffset, m_Device->GlobalBuffer()->GPUVirtualAdress());
@@ -438,7 +479,7 @@ namespace Kairos {
 
     void ComputeContext::BindPassConstantBuffer(D3D12_GPU_VIRTUAL_ADDRESS address)
     {
-        Uint32 commonParamOffset = m_CurrRootSig->NumParameters() - m_Device->m_PSOManager->NumCommonRootParamters();
+        Uint32 commonParamOffset = m_CurrRootSig->NumParameters() - g_Engine->GetRenderBackend()->PipelineManager()->NumCommonRootParamters();
         m_dCommandList->SetComputeRootConstantBufferView(2 + commonParamOffset, address);
     }
 }

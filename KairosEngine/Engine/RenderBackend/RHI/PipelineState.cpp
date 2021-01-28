@@ -62,6 +62,18 @@ namespace Kairos {
 		m_Desc.PS.BytecodeLength = pixelShader->Code->GetBufferSize();
 		m_Desc.PS.pShaderBytecode = pixelShader->Code->GetBufferPointer();
 	}
+	void GraphicsPSO::SetHullShader(Shader* hullShader)
+	{
+		KRS_CORE_ASSERT(hullShader != nullptr, "null shader passed for hull shader");
+		m_Desc.HS.BytecodeLength = hullShader->Code->GetBufferSize();
+		m_Desc.HS.pShaderBytecode = hullShader->Code->GetBufferPointer();
+	}
+	void GraphicsPSO::SetDomainShader(Shader* domainShader)
+	{
+		KRS_CORE_ASSERT(domainShader != nullptr, "null shader passed for hull shader");
+		m_Desc.DS.BytecodeLength = domainShader->Code->GetBufferSize();
+		m_Desc.DS.pShaderBytecode = domainShader->Code->GetBufferPointer();
+	}
 	void GraphicsPSO::SetRootSignature(RootSignature* sig)
 	{
 		m_Desc.pRootSignature = sig->D3DRootSignature();

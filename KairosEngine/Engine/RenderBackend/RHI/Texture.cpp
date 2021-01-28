@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include "ResourceFormat.h"
 #include "RenderDevice.h"
+#include "DX12Util.h"
 
 namespace Kairos {
 	Texture::Texture(RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3D12Resource> nativeResource, Kairos::ResourceState state)

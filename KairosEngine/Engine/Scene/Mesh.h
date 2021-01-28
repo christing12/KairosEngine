@@ -3,16 +3,18 @@
 #include <Core/EngineCore.h>
 #include <Core/BaseTypes.h>
 
+namespace dxmath = DirectX::SimpleMath;
+
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;
-
 struct Vertex {
-	Vector3 position;
-	Vector3 normal;
-	Vector3 tangent;
-	Vector3 bitangent;
-	Vector2 texCoord;
+	dxmath::Vector3 position;
+	dxmath::Vector3 normal;
+	dxmath::Vector3 tangent;
+	dxmath::Vector3 bitangent;
+	dxmath::Vector2 texCoord;
 	float padding;
 };
 

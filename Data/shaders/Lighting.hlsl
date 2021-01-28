@@ -31,6 +31,8 @@ float3 fresnelSchlick(float3 F0, float cosTheta)
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+
+
 //// Returns number of mipmap levels for specular IBL environment map.
 //uint querySpecularTextureLevels()
 //{

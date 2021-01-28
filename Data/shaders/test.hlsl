@@ -1,3 +1,12 @@
+struct GBufferPassConstants
+{
+	uint specIndex;
+	uint irradianceIndex;
+	uint specBRDFIndex;
+};
+
+#define PassDataType GBufferPassConstants
+
 #include "EntryPoint.hlsl"
 #include "Constants.hlsl"
 #include "Lighting.hlsl"
@@ -57,7 +66,7 @@ PSInput main_vs(uint indexID : SV_VertexID)
 	uint index = UnifiedIndexBuffer[indexID];
 	Vertex vertex = UnifiedVertexBuffer[index];
 
-	output.pixelPosition = mul(float4(vertex.position, 1.0), FrameDataCB.ViewProjMat);
+	output.pixelPosition = mul(float4(vertex.position, 1.0), FrameDataCB.CurrCamera.ViewProjection);
 	output.texcoord = vertex.texCoord;
 
 	output.position = vertex.position;
@@ -70,6 +79,7 @@ PSInput main_vs(uint indexID : SV_VertexID)
 	//vout.pixelPosition = mul(float4(vin.position, 1.0), mvpMatrix);
 	return output;
 }
+
 
 static const uint NumLights = 3;
 
@@ -84,13 +94,13 @@ float4 main_ps(PSInput input) : SV_TARGET
 	float metalness = Textures2D[mat.MetalnessMapIndex].Sample(LinearClampSampler(), input.texcoord).r;
 	float roughness = Textures2D[mat.RoughnessMapIndex].Sample(LinearClampSampler(), input.texcoord).r;
 
-	float3 eyePosition = FrameDataCB.EyePosition;
+	float3 eyePosition = FrameDataCB.CurrCamera.Position;
 	// Outgoing light direction (vector from world-space fragment position to the "eye").
-	float3 Lo = normalize(FrameDataCB.EyePosition - input.position);
+	float3 Lo = normalize(eyePosition - input.position);
 
 	// Get current fragment's normal and transform to world space.
 	float3 N = normalize(2.0 * Textures2D[mat.NormalMapIndex].Sample(LinearClampSampler(), input.texcoord).rgb - 1.0);
-	N = normalize(mul(input.tangentBasis, N));
+	N = normalize(mul(N, input.tangentBasis));
 
 	// Angle between surface normal and outgoing light direction.
 	float cosLo = max(0.0, dot(N, Lo));
@@ -145,7 +155,36 @@ float4 main_ps(PSInput input) : SV_TARGET
 		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 	}
 
-	float3 ambientLighting = float3(0.1, 0.1, 0.1);
-
-	return float4(directLighting, 1.0);
+	//Ambient lighting (IBL).
+	float3 ambientLighting;
+	{
+		// Sample diffuse irradiance at normal direction.
+		float3 irradiance = TexturesCube[PassDataCB.irradianceIndex].Sample(LinearClampSampler(), N).rgb;
+	
+		// Calculate Fresnel term for ambient lighting.
+		// Since we use pre-filtered cubemap(s) and irradiance is coming from many directions
+		// use cosLo instead of angle with light's half-vector (cosLh above).
+		// See: https://seblagarde.wordpress.com/2011/08/17/hello-world/
+		float3 F = fresnelSchlick(F0, cosLo);
+	
+		// Get diffuse contribution factor (as with direct lighting).
+		float3 kd = lerp(1.0 - F, 0.0, metalness);
+	
+		// Irradiance map contains exitant radiance assuming Lambertian BRDF, no need to scale by 1/PI here either.
+		float3 diffuseIBL = kd * albedo * irradiance;
+	
+		// Sample pre-filtered specular reflection environment at correct mipmap level.
+		//uint specularTextureLevels = querySpecularTextureLevels();
+		float3 specularIrradiance = TexturesCube[PassDataCB.specIndex].SampleLevel(LinearClampSampler(), Lr, 0).rgb;
+	
+		// Split-sum approximation factors for Cook-Torrance specular BRDF.
+		float2 specularBRDF = Textures2D[PassDataCB.specBRDFIndex].Sample(LinearClampSampler(), float2(cosLo, roughness)).rg;
+	
+		// Total specular IBL contribution.
+		float3 specularIBL = (F0 * specularBRDF.x + specularBRDF.y) * specularIrradiance;
+	
+		// Total ambient lighting contribution.
+		ambientLighting = diffuseIBL + specularIBL;
+	}
+	return float4(directLighting + ambientLighting, 1.0);
 }

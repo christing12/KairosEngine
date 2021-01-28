@@ -33,9 +33,16 @@ struct TextureProperties {
 };
 
 struct BufferProperties {
-	Uint32 Offset = 0; // from the start of the resource
 	Uint32 Size;
 	Uint32 Stride;
+	Uint32 Offset = 0; // from the start of the resource
+
+	BufferProperties() = default;
+	BufferProperties(Uint32 size, Uint32 stride, Uint32 offset = 0)
+		: Size(size)
+		, Stride(stride)
+		, Offset(offset)
+	{}
 };
 
 class ResourceFormat {

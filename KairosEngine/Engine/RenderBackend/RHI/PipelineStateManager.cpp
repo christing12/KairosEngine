@@ -99,8 +99,9 @@ namespace Kairos {
 		computeFn(proxy);
 
 		ComputePSO PSO(m_Device);
+		std::string entryPoint = proxy.EntryPoint.has_value() ? proxy.EntryPoint.value() : defaultCSentryPoint;
 
-		Shader* cs = m_ShaderManager->LoadShader(ShaderType::Compute, defaultCSentryPoint, proxy.CSFile);
+		Shader* cs = m_ShaderManager->LoadShader(ShaderType::Compute, entryPoint, proxy.CSFile);
 		PSO.SetComputeShader(cs);
 		PSO.SetDebugName(name);
 		PSO.SetRootSignature(GetRootSignature(proxy.RootSignatureName).Signature);
@@ -195,6 +196,9 @@ namespace Kairos {
 		textureCube.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::ShaderResource, 0, 15 });
 		signature.AddDescriptorTable(textureCube);
 
+
+
+
 		// Unbounded RWTexture2D range
 		RootDescriptorTable RWTextures2DFloat4;
 		RWTextures2DFloat4.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 10 });
@@ -225,13 +229,21 @@ namespace Kairos {
 		RWTexture2DArrays.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 15 });
 		signature.AddDescriptorTable(RWTexture2DArrays);
 
+
+		RootDescriptorTable RWTexture2DFloat2;
+		RWTexture2DFloat2.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::UnorderedAcces, 0, 16 });
+		signature.AddDescriptorTable(RWTexture2DFloat2);
+
+
+
+
 		//Unbounded Samplers range
 		RootDescriptorTable samplers;
 		samplers.AddDescriptorRange(RootDescriptorTableRange{ ShaderRegister::Sampler, 0, 10 });
 		signature.AddDescriptorTable(samplers);
 
 		// Debug readback buffer
-		signature.AddDescriptor(RootDescriptor{ 0, 16, D3D12_ROOT_PARAMETER_TYPE_UAV, ShaderRegister::UnorderedAcces });
+		signature.AddDescriptor(RootDescriptor{ 0, 17, D3D12_ROOT_PARAMETER_TYPE_UAV, ShaderRegister::UnorderedAcces });
 	}
 
 	RootSigQueryResult PipelineStateManager::GetRootSignature(const std::string& name)

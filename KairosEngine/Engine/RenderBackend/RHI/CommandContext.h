@@ -28,6 +28,9 @@ namespace Kairos {
 		CommandContext(RenderDevice* pDevice, CommandType type);
 		~CommandContext();
 
+		//TODO: Fix this:
+		void SetScene(class Scene* scene);
+
 		void TransitionResource(GPUResource& resource, ResourceState newState, bool flushImmediate = false);
 		void FlushResourceBarriers();
 
@@ -35,6 +38,9 @@ namespace Kairos {
 		// TODO: Move to CopyContext
 		void CopyBufferRegion(RenderHandle dest, Uint32 destOffset, CPVoid data, Uint32 sizeInBytes);
 		void CopyBufferRegion(Buffer& buffer, Uint32 destOffset, CPVoid data, Uint32 sizeInBytes);
+
+		void CopyResource(GPUResource& dest, GPUResource& src);
+		void CopyTextureRegion(Texture* dest, Texture* src, Uint32 x, Uint32 y, Uint32 z);
 
 		// TODO: Switch Subresource Data for somethign else
 		void InitTexture(Texture& texture, Uint32 numSubresources, const D3D12_SUBRESOURCE_DATA subresources[]);
@@ -67,6 +73,8 @@ namespace Kairos {
 		RootSignature* m_CurrRootSig;
 		PipelineState* m_CurrPSO;
 
+		class Scene* m_Scene;
+
 	protected:
 		void BindDescriptorHeaps();
 		DynAlloc RequestUploadMemory(size_t sizeInBytes, size_t alignment = 256);
@@ -76,6 +84,7 @@ namespace Kairos {
 		inline const ID3D12GraphicsCommandList* D3DCommandList() const { return m_dCommandList.Get(); }
 		inline ID3D12CommandAllocator* GetAllocator() { return m_CurrCommandAllocator.Get(); }
 		inline CommandType GetType() { return m_Type; }
+		inline Scene* GetScene() { return m_Scene; }
 	};
 
 	class GraphicsContext : public CommandContext {
@@ -120,7 +129,7 @@ namespace Kairos {
 		void SetRootSignature(RootSignature* RootSig);
 		void SetConstantArray(Uint32 RootIndex, Uint32 NumConstants, const void* pConstants);
 		void SetDescriptorTable(Uint32 rootIndex, D3D12_GPU_DESCRIPTOR_HANDLE startGPUHandle);
-
+		void SetRootConstants(Uint32 rootIdx, Uint32 space, Uint32 numConstants, CPVoid data);
 		void Dispatch(Uint32 groupCountX, Uint32 groupCountY, Uint32 groupCountZ);
 		void BindPassConstantBuffer(D3D12_GPU_VIRTUAL_ADDRESS address);
 

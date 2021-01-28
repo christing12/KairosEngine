@@ -65,9 +65,6 @@ public:
 	// EXPERIMENTAL
 public:
 	RenderHandle CreateTexture(Microsoft::WRL::ComPtr<ID3D12Resource>, const struct TextureProperties& props);
-	RenderHandle CreateRootSignature(const std::string& name, std::function<void(struct RootSignatureProxy&)> fn);
-	RenderHandle CreateGraphicsPSO(const std::string& name, std::function<void(struct GraphicsPipelineProxy&)> fn, bool compile = false);
-	RenderHandle CreateComputePSO(const std::string& name, std::function<void(struct ComputePiplineProxy&)> fn, bool compile = false);
 	Descriptor CreateSampler(const D3D12_SAMPLER_DESC& desc);
 
 	void CompileAll();
@@ -108,7 +105,6 @@ private:
 
 	class DynamicBuffer* m_GlobalBuffer = nullptr;
 	class DynamicBuffer* m_PerFrameConstantBuffer = nullptr;
-
 public:
 	inline ID3D12Device5* D3DDevice() { return m_dDevice.Get(); }
 	inline DynamicBuffer* GlobalBuffer() { return m_GlobalBuffer; }

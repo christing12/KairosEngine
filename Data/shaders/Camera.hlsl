@@ -2,7 +2,8 @@
 
 struct Camera
 {
-    float4 Position;
+    float3 Position;
+    float padding;
     // 16 byte boundary
     float4x4 View;
     float4x4 Projection;
@@ -10,16 +11,16 @@ struct Camera
     float4x4 InverseView;
     float4x4 InverseProjection;
     float4x4 InverseViewProjection;
-    // 16 byte boundary
-    float NearPlane;
-    float FarPlane;
-    float ExposureValue100;
-    float FoVH;
-    // 16 byte boundary
-    float FoVV;
-    float FoVHTan;
-    float FoVVTan;
-    float AspectRatio; // W/H
+    //// 16 byte boundary
+    //float NearPlane;
+    //float FarPlane;
+    //float ExposureValue100;
+    //float FoVH;
+    //// 16 byte boundary
+    //float FoVV;
+    //float FoVHTan;
+    //float FoVVTan;
+    //float AspectRatio; // W/H
 };
 
 

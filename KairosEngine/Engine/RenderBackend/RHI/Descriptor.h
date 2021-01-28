@@ -14,10 +14,10 @@ public:
 	using ResourcePtr = Microsoft::WRL::ComPtr<ID3D12Resource>;
 	Descriptor() = default;
 	Descriptor(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle, Uint32 index = 0);
-	~Descriptor();
+	~Descriptor() {}
 private:
-	D3D12_GPU_DESCRIPTOR_HANDLE m_GPUHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_CPUHandle;
+	D3D12_GPU_DESCRIPTOR_HANDLE m_GPUHandle = { 0 };
+	D3D12_CPU_DESCRIPTOR_HANDLE m_CPUHandle = { 0 };
 
 	Uint32 indexInRange = 0;
 public:
@@ -31,7 +31,7 @@ public:
 	using ResourcePtr = Microsoft::WRL::ComPtr<ID3D12Resource>;
 
 	DescriptorRange();
-	~DescriptorRange() = default;
+	~DescriptorRange() {}
 	DescriptorRange(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle,
 		Uint32 handleSize, Uint32 numDescriptors, Uint32 index = 0);
 

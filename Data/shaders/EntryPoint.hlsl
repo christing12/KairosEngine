@@ -12,19 +12,10 @@ struct GlobalData
 };
 
 
+
 struct FrameData
 {
-    float4x4 ViewProjMat;
-    float3 EyePosition;
-    float padding;
-    //Camera CurrentFrameCamera;
-    //Camera PreviousFrameCamera;
-
-    //bool IsDenoiserEnabled;
-    //bool IsReprojectionHistoryDebugEnabled;
-    //bool IsGradientDebugEnabled;
-    //bool IsMotionDebugEnabled;
-    //bool IsDenoiserAntilagEnabled;
+    Camera CurrCamera;
 };
 
 #define GlobalDataType GlobalData

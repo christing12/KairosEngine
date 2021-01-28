@@ -12,7 +12,7 @@ class RenderDevice;
 class Buffer : public GPUResource {
 public:
 	Buffer() = default;
-	Buffer(RenderDevice* pDevice, const struct BufferProperties& bufferProps, Kairos::ResourceState state);
+	Buffer(RenderDevice* pDevice, const struct BufferProperties& bufferProps, Kairos::ResourceState state, HeapType heapType = HeapType::Default);
 	Buffer(RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3D12Resource> resource, Kairos::ResourceState state);
 	~Buffer() = default;
 
@@ -45,15 +45,30 @@ public:
 	DynamicBuffer() = default;
 	// no resource state -> has to start as an ResourceState::GenericRead
 	DynamicBuffer(RenderDevice* pDevice, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
+	DynamicBuffer(RenderDevice* pDevice, const struct BufferProperties& bufferProps);
+	static DynamicBuffer* Create(RenderDevice* pDevice, const struct BufferProperties& props);
+
+
+
 	~DynamicBuffer();
 	void Map();
 	void Unmap();
 
+	template<class T>
+	void Write(T& data);
 private:
 	void* m_CPUPtr = nullptr;
 
 public:
 	inline void* DataPtr() { return m_CPUPtr; }
 };
+
+
+template<class T>
+void DynamicBuffer::Write(T& data)
+{
+	KRS_CORE_ASSERT(m_CPUPtr != nullptr, "Dynamic Buffer has never been mapped");
+	memcpy(m_CPUPtr, &data, sizeof(data));
+}
 
 KRS_END_NAMESPACE

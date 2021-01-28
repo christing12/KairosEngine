@@ -3,18 +3,16 @@
 
 struct SkyboxPass
 {
-    uint indexBufferOffset;
-    uint vertexBufferOffset;
-    uint skyboxTextureIndex;
     float4x4 skyboxViewProj;
+    uint skyboxTextureIndex;
 };
 
 #define PassDataType SkyboxPass
 
 #include "EntryPoint.hlsl"
 
-StructuredBuffer<Vertex> UnifiedVertexBuffer : register(t0);
-StructuredBuffer<uint> UnifiedIndexBuffer : register(t1);
+StructuredBuffer<Vertex> CubeMesh : register(t0);
+StructuredBuffer<uint> CubeIndices : register(t1);
 
 struct PixelInput
 {
@@ -24,8 +22,8 @@ struct PixelInput
 
 PixelInput main_vs(uint indexID : SV_VertexID)
 {
-    uint index = UnifiedIndexBuffer[indexID + PassDataCB.indexBufferOffset];
-    Vertex vertex = UnifiedVertexBuffer[index + PassDataCB.vertexBufferOffset];
+    uint index = CubeIndices[indexID];
+    Vertex vertex = CubeMesh[index];
     
     PixelInput output;
     output.position = mul(float4(vertex.position, 1.0), PassDataCB.skyboxViewProj).xyww;
@@ -46,6 +44,6 @@ float2 SphericalSample(float3 v)
 
 float4 main_ps(PixelInput input) : SV_TARGET
 {
-    return TexturesCube[PassDataCB.skyboxTextureIndex].Sample(LinearClampSampler(), normalize(input.direction));
+    return TexturesCube[PassDataCB.skyboxTextureIndex].Sample(AnisotropicClampSampler(), normalize(input.direction));
 }
 

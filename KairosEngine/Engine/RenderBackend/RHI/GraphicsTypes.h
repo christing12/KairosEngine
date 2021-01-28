@@ -40,7 +40,8 @@ enum class DescriptorType : Uint8 {
 	CBV,
 	UAV,
 	SRV,
-	Sampler
+	Sampler,
+	Count,
 };
 D3D12_DESCRIPTOR_HEAP_TYPE D3DDescriptorHeap(DescriptorType type);
 

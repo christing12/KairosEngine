@@ -322,7 +322,7 @@ namespace Kairos {
 
 	DescriptorRange OnlineCBVSRVUAVHeap::AllocateCBV()
 	{
-		Uint32 slot = m_SRVPool.Allocate();
+		Uint32 slot = m_CBVPool.Allocate();
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = GetCPUAddress(slot, Range::CBV);
 		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = GetGPUAddress(slot, Range::CBV);
 
@@ -331,7 +331,7 @@ namespace Kairos {
 
 	DescriptorRange OnlineCBVSRVUAVHeap::AllocateUAV()
 	{
-		Uint32 slot = m_SRVPool.Allocate();
+		Uint32 slot = m_UAVPool.Allocate();
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = GetCPUAddress(slot, Range::UAV);
 		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = GetGPUAddress(slot, Range::UAV);
 
@@ -378,5 +378,33 @@ namespace Kairos {
 
 		return DescriptorRange(cpuHandle, gpuHandle, m_HandleSize, 1, slot);
 	}
+
+
+
+
+
+
+
+
+
+
+
+	PoolDescriptorAllocator::Desc::Desc(const std::vector<Uint32> rangeCount, bool shaderVisible)
+	{
+		KRS_CORE_ASSERT(rangeCount.size() <= (Uint32)DescriptorType::Count, " Too Many Ranges listed for initialization");
+		for (size_t type = 0; type < rangeCount.size(); ++type)
+		{
+			m_DescriptorRangeCount[type] = rangeCount[type];
+		}
+		isShaderVisible = shaderVisible;
+	}
+
+
+
+
+
+
+
+
 }
 

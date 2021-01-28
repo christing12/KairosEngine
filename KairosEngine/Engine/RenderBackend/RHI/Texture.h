@@ -8,6 +8,8 @@
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;
+class Descriptor;
+class DescriptorRange;
 
 
 class Texture : public GPUResource {

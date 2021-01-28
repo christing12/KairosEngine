@@ -1,8 +1,4 @@
-// Physically Based Rendering
-// Copyright (c) 2017-2018 Michał Siejak
-
-// Computes diffuse irradiance cubemap convolution for image-based lighting.
-// Uses quasi Monte Carlo sampling with Hammersley sequence.
+#include "EntryPoint.hlsl"
 
 static const float PI = 3.141592;
 static const float TwoPI = 2 * PI;
@@ -11,10 +7,13 @@ static const float Epsilon = 0.00001;
 static const uint NumSamples = 64 * 1024;
 static const float InvNumSamples = 1.0 / float(NumSamples);
 
-TextureCube inputTexture : register(t0);
-RWTexture2DArray<float4> outputTexture : register(u0);
+struct IRMapConstants
+{
+	uint inputTextureIndex; // cubemap input
+	uint outputTextureIndex; // texture array output
+};
 
-SamplerState defaultSampler : register(s0);
+ConstantBuffer<IRMapConstants> irmapTextures : register(b0);
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
@@ -50,7 +49,7 @@ float3 sampleHemisphere(float u1, float u2)
 float3 getSamplingVector(uint3 ThreadID)
 {
 	float outputWidth, outputHeight, outputDepth;
-	outputTexture.GetDimensions(outputWidth, outputHeight, outputDepth);
+	RW_Float4_Texture2DArrays[irmapTextures.outputTextureIndex].GetDimensions(outputWidth, outputHeight, outputDepth);
 
     float2 st = ThreadID.xy/float2(outputWidth, outputHeight);
     float2 uv = 2.0 * float2(st.x, 1.0-st.y) - 1.0;
@@ -104,9 +103,9 @@ void main(uint3 ThreadID : SV_DispatchThreadID)
 		float cosTheta = max(0.0, dot(Li, N));
 
 		// PIs here cancel out because of division by pdf.
-		irradiance += 2.0 * inputTexture.SampleLevel(defaultSampler, Li, 0).rgb * cosTheta;
+		irradiance += 2.0 * TexturesCube[irmapTextures.inputTextureIndex].SampleLevel(LinearClampSampler(), Li, 0).rgb * cosTheta;
 	}
 	irradiance /= float(NumSamples);
 
-	outputTexture[ThreadID] = float4(irradiance, 1.0);
+	RW_Float4_Texture2DArrays[irmapTextures.outputTextureIndex][ThreadID] = float4(irradiance, 1.0);
 }

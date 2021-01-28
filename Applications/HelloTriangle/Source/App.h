@@ -26,33 +26,10 @@ struct GlobalRootConstants
 	Uint32 MaxSamplerIdx;
 };
 
-struct GPUCamera
-{
-	Vector3 Position;
-	// 16 byte boundary
-	Matrix View;
-	Matrix Projection;
-	Matrix ViewProjection;
-	Matrix InverseView;
-	Matrix InverseProjection;
-	Matrix InverseViewProjection;
-	// 16 byte boundary
-	float NearPlane = 0.0f;
-	float FarPlane = 0.0f;
-	float ExposureValue100 = 0.0f;
-	float FoVH = 0.0f;
-	// 16 byte boundary
-	float FoVV = 0.0f;
-	float FoVHTan = 0.0f;
-	float FoVVTan = 0.0f;
-	float AspectRatio = 0;
-	// 16 byte boundary
-};
 
 struct PerFrameRootConstants
 {
-	Matrix ViewProjection;
-	Vector3 Position;
+	Kairos::GPUCamera camera;
 
 	//GPUCamera CurrentFrameCamera;
 	//GPUCamera PreviousFrameCamera;
@@ -62,14 +39,6 @@ struct PerFrameRootConstants
 	//uint32_t IsGradientDebugEnabled;
 	//uint32_t IsMotionDebugEnabled;
 	//uint32_t IsDenoiserAntilagEnabled;
-};
-
-struct SkyboxPass
-{
-	Matrix skyboxViewProj;
-	Uint32 indexBufferOffset;
-	Uint32 vertexBufferOffset;
-	Uint32 skyboxTextureIndex;
 };
 
 using namespace Kairos;
@@ -89,7 +58,8 @@ public:
 	void SetupResources();
 
 private:
-	Scene m_Scene;
+	
+	Kairos::Scene m_Scene;
 	GlobalRootConstants mGlobalConstants;
 	PerFrameRootConstants mPerFrameConstants; 
 
@@ -97,12 +67,17 @@ private:
 	D3D12_VIEWPORT m_Viewport;
 
 	Kairos::Descriptor linearSamplerHandle;
+	Kairos::Descriptor aniSamplerHandler;
 private:
 	FrameBuffer mFrameBuffers[2];
 	Kairos::RenderHandle bufferHandle;
-	Kairos::Texture* envTexture;
-	Kairos::Texture* unfilteredEnv;
 	Kairos::DynamicBuffer* m_SkyboxBuffer;
 
 	Kairos::Mesh skyboxMesh;
+
+private:
+	GBufferPass m_GBufferPass;
+	TonemapPass m_TonemapPass;
+	SkyboxPass m_SkyboxPass;
+	Kairos::EnvironmentMap m_EnvMap;
 };

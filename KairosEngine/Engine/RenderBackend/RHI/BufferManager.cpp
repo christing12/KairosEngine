@@ -19,7 +19,7 @@ namespace Kairos {
 
 	BufferQueryResult BufferManager::AllocStaticBuffer(Uint32 size, Uint32 stride, void* data)
 	{
-		BufferProperties props{ 0, size, stride };
+		BufferProperties props{ size, stride };
 		BufferQueryResult result = AllocateBuffer(m_StaticBuffers, props, ResourceState::Common);
 		if (data != nullptr) {
 			m_Device->TransientCommand([&](CommandContext& ctx) {
@@ -33,18 +33,18 @@ namespace Kairos {
 
 	BufferQueryResult BufferManager::AllocVertBuffer(Uint32 numElements, Uint32 stride, void* data)
 	{
-		BufferProperties props{ 0, numElements * stride, stride};
+		BufferProperties props{ numElements * stride, stride};
 		return AllocateBuffer(m_StaticVertBuffers, props, ResourceState::ConstantBuffer);
 	}
 	BufferQueryResult BufferManager::AllocIndexBuffer(Uint32 numElements, Uint32 stride, void* data)
 	{
-		BufferProperties props{ 0, numElements * stride, stride};
+		BufferProperties props{ numElements * stride, stride};
 		return AllocateBuffer(m_StaticIndexBuffers, props, ResourceState::ConstantBuffer);
 
 	}
 	BufferQueryResult BufferManager::AllocDynConstBuffer(Uint32 sizeInBytes, Uint32 stride, void* data)
 	{
-		BufferProperties props{ 0, sizeInBytes, stride };
+		BufferProperties props{ sizeInBytes, stride };
 
 		D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(sizeInBytes);
 
