@@ -4,6 +4,8 @@
 #include <Core/BaseTypes.h>
 #include "GraphicsTypes.h"
 
+#include "Texture.h"
+
 KRS_BEGIN_NAMESPACE(Kairos)
 
 class RenderDevice;
@@ -17,9 +19,8 @@ struct TextureQueryResult {
 
 class TextureManager {
 public:
-	TextureManager() = default;
+	KRS_CLASS_NON_COPYABLE_AND_MOVABLE(TextureManager);
 	TextureManager(RenderDevice* pDevice);
-	~TextureManager();
 
 
 	void Shutdown();

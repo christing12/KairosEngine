@@ -8,12 +8,10 @@
 #include "GraphicsTypes.h"
 #include "DescriptorHeap.h"
 
-#include "TextureManager.h"
-#include "PipelineStateManager.h"
-#include "ShaderManager.h"
-#include "ContextManager.h"
 #include "BufferManager.h"
+#include "ContextManager.h"
 #include "CommandQueue.h"
+#include "TextureManager.h"
 
 KRS_BEGIN_NAMESPACE(Kairos)
 
@@ -36,9 +34,8 @@ class RenderDevice {
 	friend class GraphicsContext;
 	friend class ComputeContext;
 public:
-	RenderDevice() = default;
+	KRS_CLASS_NON_COPYABLE(RenderDevice);
 	RenderDevice(Microsoft::WRL::ComPtr<ID3D12Device5> pdDevice);
-	~RenderDevice();
 
 
 
@@ -96,10 +93,8 @@ private:
 
 
 	//
-	Scope<class BufferManager> m_BufferManager;
-	Scope<class ShaderManager> m_ShaderManager;
-	Scope<class PipelineStateManager> m_PSOManager;
-	Scope<class TextureManager> m_TextureManager;
+	Scope<BufferManager> m_BufferManager;
+	Scope<TextureManager> m_TextureManager;
 
 	ContextManager m_ContextManager;
 
@@ -116,10 +111,10 @@ public:
 
 };
 
-template<typename Constant>
-void RenderDevice::SetGlobalRootConstant(const Constant& constants)
+template<class Constants>
+void RenderDevice::SetGlobalRootConstant(const Constants& constants)
 {
-	Uint64 alignedSize = Math::AlignUp(sizeof(Constant), 256);
+	Uint64 alignedSize = Math::AlignUp(sizeof(Constants), 256);
 
 	if (m_GlobalBuffer == nullptr)
 

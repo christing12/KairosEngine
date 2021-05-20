@@ -7,6 +7,7 @@
 #include "RenderBackend/RHI/Texture.h"
 #include "RenderBackend/RHI/RenderDevice.h"
 #include "RenderBackend/RHI/CommandContext.h"
+#include "RenderBackend/RHI/Buffer.h"
 
 namespace Kairos {
 	SceneGPUStorage::SceneGPUStorage(RenderDevice* pDevice, Scene* scene)

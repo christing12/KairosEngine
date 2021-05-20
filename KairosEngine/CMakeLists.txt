@@ -118,10 +118,18 @@ source_group("Render Backend\\RHI" FILES ${RHI_INC} ${RHI_SRC})
 
 
 set(PASSES_INC
+    EnvironmentMap.h
+    GBufferPass.h
+    GenerateMips.h
+    SkyboxPass.h
     TonemapPass.h
 )
 
 set(PASSES_SRC
+    EnvironmentMap.cpp
+    GBufferPass.cpp
+    GenerateMips.cpp
+    SkyboxPass.cpp
     TonemapPass.cpp
 )
 list(TRANSFORM PASSES_INC PREPEND "Engine/RenderBackend/RenderPasses/")
@@ -136,6 +144,7 @@ set(SCENE_INC
     Mesh.h
     Material.h
     MeshComponent.h
+    SceneGPUStorage.h
 )
 
 set(SCENE_SRC
@@ -145,6 +154,7 @@ set(SCENE_SRC
     Mesh.cpp
     Material.cpp
     MeshComponent.cpp
+    SceneGPUStorage.cpp
 )
 list(TRANSFORM SCENE_INC PREPEND "Engine/Scene/")
 list(TRANSFORM SCENE_SRC PREPEND "Engine/Scene/")

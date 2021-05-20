@@ -17,9 +17,6 @@ namespace Kairos
 	{
 	}
 	
-	TextureManager::~TextureManager() 
-	{}
-
 	void TextureManager::Shutdown()
 	{
 		m_AllocatedTextures.clear();

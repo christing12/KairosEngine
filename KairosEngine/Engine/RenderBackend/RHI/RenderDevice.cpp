@@ -27,20 +27,12 @@ namespace Kairos {
 
 		m_TextureManager = CreateScope<TextureManager>(this);
 		m_BufferManager = CreateScope<BufferManager>(this);
-		m_ShaderManager = CreateScope<ShaderManager>(this, Filesystem::GetWorkingDirectory());
-		m_PSOManager = CreateScope<PipelineStateManager>(this, m_ShaderManager.get());
-
 		
 		m_OnlineCBV = OnlineCBVSRVUAVHeap(this, { 1000, 1000, 1000 });
 		m_OnlineSamplerHeap = OnlineSamplerHeap(this, 1000);
 
 
 	}
-
-	RenderDevice::~RenderDevice()
-	{
-	}
-
 	DescriptorRange RenderDevice::AllocateDescriptor(DescriptorType type, Uint32 numDescriptors, bool shaderVisible)
 	{
 		if (!shaderVisible) {
@@ -159,11 +151,6 @@ namespace Kairos {
 
 		m_dDevice->CreateSampler(&desc, result.CPUHandle());
 		return result;
-	}
-
-	void RenderDevice::CompileAll()
-	{
-		m_PSOManager->CompileAll();
 	}
 
 

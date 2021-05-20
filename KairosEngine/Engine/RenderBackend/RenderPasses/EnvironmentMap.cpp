@@ -33,12 +33,12 @@ namespace Kairos {
 			});
 		result.Pipeline->Finalize();
 
-		result = manager->CreateComputePipelineState("spmap", [](ComputePiplineProxy& proxy)
-			{
-				proxy.CSFile = "spmap.hlsl";
-				proxy.RootSignatureName = "OneTexture";
-			});
-		result.Pipeline->Finalize();
+		//result = manager->CreateComputePipelineState("spmap", [](ComputePiplineProxy& proxy)
+		//	{
+		//		proxy.CSFile = "spmap.hlsl";
+		//		proxy.RootSignatureName = "OneTexture";
+		//	});
+		//result.Pipeline->Finalize();
 		
 		result = manager->CreateComputePipelineState("irMap", [](ComputePiplineProxy& proxy)
 			{
